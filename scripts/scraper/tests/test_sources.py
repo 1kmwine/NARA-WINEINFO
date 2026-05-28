@@ -3,6 +3,7 @@ import os
 import responses as resp_lib
 import pytest
 from sources.naver_blog import NaverBlogScraper
+from sources.youtube_scraper import YouTubeScraper
 
 
 MOCK_BLOG_API_RESPONSE = {
@@ -36,3 +37,37 @@ def test_naver_blog_scraper_with_api(monkeypatch):
     assert items[0].sourceType == "naver_blog"
     assert "샤토 마고" in items[0].title or "마고" in items[0].title
     assert items[0].url == "https://blog.naver.com/user/post1"
+
+
+MOCK_YT_API_RESPONSE = {
+    "items": [
+        {
+            "id": {"videoId": "dQw4w9WgXcQ"},
+            "snippet": {
+                "title": "샤토 마고 2018 테이스팅",
+                "channelTitle": "와인채널",
+                "publishedAt": "2024-03-15T00:00:00Z",
+                "description": "보르도 최고 와인 샤토 마고를 시음해봤습니다.",
+                "thumbnails": {"medium": {"url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg"}},
+            },
+        }
+    ]
+}
+
+
+@resp_lib.activate
+def test_youtube_scraper_with_api(monkeypatch):
+    resp_lib.add(
+        resp_lib.GET,
+        "https://www.googleapis.com/youtube/v3/search",
+        json=MOCK_YT_API_RESPONSE,
+        status=200,
+    )
+    monkeypatch.setenv("YOUTUBE_API_KEY", "test_yt_key")
+
+    scraper = YouTubeScraper()
+    items = scraper.scrape_wine(1, "chateau-margaux", "샤토 마고")
+    assert len(items) == 1
+    assert items[0].sourceType == "youtube"
+    assert items[0].url == "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    assert items[0].thumbnailUrl is not None
