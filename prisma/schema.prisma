@@ -20,6 +20,8 @@ model Winery {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   wines       Wine[]
+
+  @@unique([nameKo])
 }
 
 model Grape {
@@ -27,6 +29,8 @@ model Grape {
   nameKo String
   nameEn String
   wines  WineGrape[]
+
+  @@unique([nameKo])
 }
 
 model Wine {
