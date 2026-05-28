@@ -4,52 +4,36 @@
 
 @layer base {
   :root {
-    --color-primary: #7b2335;
-    --color-accent: #c0392b;
+    --primary: #7b2335;
+    --primary-light: #a83245;
+    --primary-dark: #3c0d18;
   }
-
-  html {
-    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', -apple-system, BlinkMacSystemFont, sans-serif;
-  }
-
   body {
-    @apply bg-white text-gray-900 antialiased;
+    @apply text-gray-800 bg-white;
+    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
   }
 }
 
 @layer components {
-  .section-header {
-    @apply flex items-center gap-3 my-6;
+  .section-divider {
+    @apply flex items-center gap-4 my-8;
   }
-
-  .section-header::before,
-  .section-header::after {
+  .section-divider::before,
+  .section-divider::after {
     content: '';
-    @apply flex-1 h-px bg-gray-300;
+    @apply flex-1 h-px bg-gray-200;
   }
-
-  .section-title {
-    @apply text-center font-semibold text-gray-800 text-sm tracking-widest uppercase px-2;
+  .section-divider-title {
+    @apply text-sm font-bold text-gray-700 tracking-wider text-center;
   }
-
   .spec-label {
     @apply text-sm font-medium;
-    color: #7b2335;
+    color: var(--primary);
   }
-
-  .spec-value {
-    @apply text-sm text-gray-700;
+  .badge-source {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700;
   }
-
-  .wine-card {
-    @apply bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200;
-  }
-
-  .btn-primary {
-    @apply bg-primary text-white px-4 py-2 rounded text-sm font-medium hover:bg-wine-dark transition-colors;
-  }
-
-  .btn-outline {
-    @apply border border-primary text-primary px-4 py-2 rounded text-sm font-medium hover:bg-primary hover:text-white transition-colors;
+  .wine-card-hover {
+    @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
   }
 }
