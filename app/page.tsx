@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
 import WineCard from '@/components/WineCard'
+import QuickNavLinks from '@/components/QuickNavLinks'
 import { wineTypeLabel } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
@@ -91,30 +92,7 @@ export default async function HomePage() {
       {/* Quick nav */}
       <section className="bg-gray-50 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-wrap gap-3 justify-center">
-            {[
-              { href: '/wines?type=red', label: '🍷 레드', color: '#7b2335' },
-              { href: '/wines?type=white', label: '🥂 화이트', color: '#b8860b' },
-              { href: '/wines?type=rose', label: '🌹 로제', color: '#c06080' },
-              { href: '/wines?type=sparkling', label: '✨ 스파클링', color: '#2c6e9b' },
-              { href: '/wines?type=dessert', label: '🍯 디저트', color: '#8b6914' },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="px-4 py-2 rounded-full border text-sm font-medium hover:text-white transition-colors"
-                style={{ borderColor: item.color, color: item.color }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = item.color
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = ''
-                }}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
+          <QuickNavLinks />
         </div>
       </section>
 
