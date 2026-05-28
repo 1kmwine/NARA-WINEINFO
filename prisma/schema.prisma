@@ -38,7 +38,7 @@ model Wine {
   erpCode          String?
   wineryId         Int?
   winery           Winery?      @relation(fields: [wineryId], references: [id])
-  type             String
+  type             String       // red|white|rose|sparkling|dessert|fortified
   country          String
   regionL1         String
   regionL2         String?
@@ -50,7 +50,7 @@ model Wine {
   acidity          Int?
   body             Int?
   tannin           Int?
-  fizz             Int?
+  fizz             Int?         // 1-5 scale; sparkling wines only
   description      String?
   wineStory        String?
   tastingNotes     String?
@@ -90,7 +90,7 @@ model WineGrape {
   grapeId    Int
   percentage Int?
   wine       Wine  @relation(fields: [wineId], references: [id], onDelete: Cascade)
-  grape      Grape @relation(fields: [grapeId], references: [id])
+  grape      Grape @relation(fields: [grapeId], references: [id], onDelete: Restrict)
 
   @@id([wineId, grapeId])
 }
@@ -110,10 +110,10 @@ model ScrapedData {
   id           Int       @id @default(autoincrement())
   wineId       Int
   wine         Wine      @relation(fields: [wineId], references: [id], onDelete: Cascade)
-  sourceType   String
+  sourceType   String    // naver_blog|naver_cafe|youtube|instagram|wine_searcher|winery_official|article_kr|article_global|other
   sourceName   String?
   title        String?
-  url          String?   @unique
+  url          String    @unique
   content      String?
   summary      String?
   author       String?
@@ -130,7 +130,7 @@ model ScrapeJob {
   id          Int       @id @default(autoincrement())
   wineId      Int       @unique
   wine        Wine      @relation(fields: [wineId], references: [id], onDelete: Cascade)
-  status      String    @default("pending")
+  status      String    @default("pending") // pending|running|done|failed
   lastRunAt   DateTime?
   nextRunAt   DateTime?
   errorMsg    String?
