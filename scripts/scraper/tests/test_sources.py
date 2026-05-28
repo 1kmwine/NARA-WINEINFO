@@ -1,4 +1,5 @@
 # scripts/scraper/tests/test_sources.py
+import os
 import responses as resp_lib
 import pytest
 from sources.naver_blog import NaverBlogScraper
@@ -18,16 +19,15 @@ MOCK_BLOG_API_RESPONSE = {
 
 
 @resp_lib.activate
-def test_naver_blog_scraper_with_api():
+def test_naver_blog_scraper_with_api(monkeypatch):
     resp_lib.add(
         resp_lib.GET,
         "https://openapi.naver.com/v1/search/blog.json",
         json=MOCK_BLOG_API_RESPONSE,
         status=200,
     )
-    import os
-    os.environ["NAVER_CLIENT_ID"] = "test_id"
-    os.environ["NAVER_CLIENT_SECRET"] = "test_secret"
+    monkeypatch.setenv("NAVER_CLIENT_ID", "test_id")
+    monkeypatch.setenv("NAVER_CLIENT_SECRET", "test_secret")
 
     scraper = NaverBlogScraper()
     items = scraper.scrape_wine(1, "chateau-margaux", "샤토 마고")

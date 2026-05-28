@@ -36,7 +36,7 @@ class NaverBlogScraper(BaseScraper):
             items.append(ScrapedItem(
                 wineId=wine_id,
                 sourceType=self.source_type,
-                url=post["link"],
+                url=post.get("link", ""),
                 title=title,
                 summary=self.truncate_summary(summary),
                 publishedAt=self._parse_postdate(post.get("postdate", "")),

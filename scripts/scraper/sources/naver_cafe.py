@@ -12,7 +12,7 @@ class NaverCafeScraper(BaseScraper):
     SEARCH_API = "https://openapi.naver.com/v1/search/cafearticle.json"
     TARGET_CAFE = "winerack24"
 
-    def scrape_wine(self, wine_id: int, wine_slug: str, wine_name_ko: str) -> list[ScrapedItem]:
+    def scrape_wine(self, wine_id: int, _wine_slug: str, wine_name_ko: str) -> list[ScrapedItem]:
         client_id = os.environ.get("NAVER_CLIENT_ID", "")
         client_secret = os.environ.get("NAVER_CLIENT_SECRET", "")
         if client_id and client_secret:
@@ -32,6 +32,8 @@ class NaverCafeScraper(BaseScraper):
             return []
         items = []
         for post in resp.json().get("items", []):
+            if self.TARGET_CAFE and post.get("cafename", "").lower() != self.TARGET_CAFE.lower():
+                continue
             title = re.sub(r"<[^>]+>", "", post.get("title", "")).strip()
             summary = re.sub(r"<[^>]+>", "", post.get("description", "")).strip()
             items.append(ScrapedItem(
@@ -40,8 +42,20 @@ class NaverCafeScraper(BaseScraper):
                 url=post.get("link", ""),
                 title=title,
                 summary=self.truncate_summary(summary),
-                publishedAt=None,
+                publishedAt=self._parse_pubdate(post.get("pubDate", "")),
                 thumbnailUrl=None,
                 extra={"cafeName": post.get("cafename", ""), "cafeUrl": post.get("cafeurl", "")},
             ))
         return items
+
+    def _parse_pubdate(self, pubdate: str) -> str | None:
+        if not pubdate:
+            return None
+        try:
+            from email.utils import parsedate
+            parsed = parsedate(pubdate)
+            if parsed:
+                return f"{parsed[0]:04d}-{parsed[1]:02d}-{parsed[2]:02d}"
+        except Exception:
+            pass
+        return None
