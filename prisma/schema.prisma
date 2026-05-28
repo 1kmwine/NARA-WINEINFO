@@ -23,78 +23,118 @@ model Winery {
 }
 
 model Grape {
-  id      Int         @id @default(autoincrement())
-  nameKo  String
-  nameEn  String
-  wines   WineGrape[]
+  id     Int         @id @default(autoincrement())
+  nameKo String
+  nameEn String
+  wines  WineGrape[]
 }
 
 model Wine {
-  id               Int           @id @default(autoincrement())
-  slug             String        @unique
+  id               Int          @id @default(autoincrement())
+  slug             String       @unique
   nameKo           String
   nameEn           String
   subtitle         String?
-  winery           Winery?       @relation(fields: [wineryId], references: [id])
+  erpCode          String?
   wineryId         Int?
-  type             String        // red, white, rose, sparkling, dessert
+  winery           Winery?      @relation(fields: [wineryId], references: [id])
+  type             String
   country          String
-  regionL1         String        // e.g. 캘리포니아
-  regionL2         String?       // e.g. 나파 밸리
-  volume           Int           @default(750)
+  regionL1         String
+  regionL2         String?
+  volume           Int          @default(750)
   servingTempMin   Int?
   servingTempMax   Int?
-  foodPairing      String        @default("[]") // JSON array of strings
-  sweetness        Int?          // 1-5
-  acidity          Int?          // 1-5
-  body             Int?          // 1-5
-  tannin           Int?          // 1-5
+  foodPairing      String       @default("[]")
+  sweetness        Int?
+  acidity          Int?
+  body             Int?
+  tannin           Int?
+  fizz             Int?
   description      String?
-  wineryDesc       String?
   wineStory        String?
-  checkpoints      String        @default("[]") // JSON array of {label, text}
   tastingNotes     String?
   productionMethod String?
+  checkpoints      String       @default("[]")
   bottleImageUrl   String?
-  images           String        @default("[]") // JSON array of URLs
-  isPublished      Boolean       @default(true)
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  isPublished      Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
   grapes           WineGrape[]
   awards           Award[]
+  images           WineImage[]
   scrapedData      ScrapedData[]
+  scrapeJob        ScrapeJob?
+
+  @@index([type])
+  @@index([country])
+  @@index([regionL1])
+  @@index([wineryId])
+  @@index([isPublished])
+}
+
+model WineImage {
+  id     Int    @id @default(autoincrement())
+  wineId Int
+  wine   Wine   @relation(fields: [wineId], references: [id], onDelete: Cascade)
+  url    String
+  type   String @default("other")
+  order  Int    @default(0)
+  alt    String?
+
+  @@index([wineId])
 }
 
 model WineGrape {
-  wine       Wine   @relation(fields: [wineId], references: [id])
   wineId     Int
-  grape      Grape  @relation(fields: [grapeId], references: [id])
   grapeId    Int
   percentage Int?
+  wine       Wine  @relation(fields: [wineId], references: [id], onDelete: Cascade)
+  grape      Grape @relation(fields: [grapeId], references: [id])
 
   @@id([wineId, grapeId])
 }
 
 model Award {
   id      Int    @id @default(autoincrement())
-  wine    Wine   @relation(fields: [wineId], references: [id])
   wineId  Int
+  wine    Wine   @relation(fields: [wineId], references: [id], onDelete: Cascade)
   vintage Int
-  source  String // WS, RP, WE, JH, D, etc.
+  source  String
   score   Int
+
+  @@index([wineId])
 }
 
 model ScrapedData {
+  id           Int       @id @default(autoincrement())
+  wineId       Int
+  wine         Wine      @relation(fields: [wineId], references: [id], onDelete: Cascade)
+  sourceType   String
+  sourceName   String?
+  title        String?
+  url          String?   @unique
+  content      String?
+  summary      String?
+  author       String?
+  thumbnailUrl String?
+  publishedAt  DateTime?
+  scrapedAt    DateTime  @default(now())
+  metadata     String    @default("{}")
+
+  @@index([wineId])
+  @@index([wineId, sourceType])
+}
+
+model ScrapeJob {
   id          Int       @id @default(autoincrement())
-  wine        Wine      @relation(fields: [wineId], references: [id])
-  wineId      Int
-  sourceType  String    // naver_blog, naver_cafe, youtube, instagram, wine_searcher, winery_official, article, other
-  sourceName  String?
-  title       String?
-  url         String?
-  content     String?
-  author      String?
-  publishedAt DateTime?
-  scrapedAt   DateTime  @default(now())
-  metadata    String    @default("{}") // JSON
+  wineId      Int       @unique
+  wine        Wine      @relation(fields: [wineId], references: [id], onDelete: Cascade)
+  status      String    @default("pending")
+  lastRunAt   DateTime?
+  nextRunAt   DateTime?
+  errorMsg    String?
+  resultCount Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
