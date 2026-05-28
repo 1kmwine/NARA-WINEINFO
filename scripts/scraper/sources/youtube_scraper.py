@@ -1,5 +1,6 @@
 # scripts/scraper/sources/youtube_scraper.py
 import os
+import time
 import requests
 from base_scraper import BaseScraper
 from db_client import ScrapedItem
@@ -18,28 +19,33 @@ class YouTubeScraper(BaseScraper):
 
     def _scrape_via_api(self, wine_id: int, query: str, api_key: str) -> list[ScrapedItem]:
         self._wait_rate_limit()
-        resp = requests.get(
-            self.SEARCH_API,
-            params={
-                "part": "snippet",
-                "q": query,
-                "type": "video",
-                "maxResults": config.MAX_RESULTS_PER_SOURCE,
-                "relevanceLanguage": "ko",
-                "key": api_key,
-            },
-            headers=config.HEADERS,
-            timeout=config.REQUEST_TIMEOUT,
-        )
-        self._last_request_time = __import__("time").monotonic()
+        try:
+            resp = requests.get(
+                self.SEARCH_API,
+                params={
+                    "part": "snippet",
+                    "q": query,
+                    "type": "video",
+                    "maxResults": config.MAX_RESULTS_PER_SOURCE,
+                    "relevanceLanguage": "ko",
+                    "key": api_key,
+                },
+                headers=config.HEADERS,
+                timeout=config.REQUEST_TIMEOUT,
+            )
+            self._last_request_time = time.monotonic()
+        except requests.RequestException:
+            return []
         if not resp.ok:
             return []
         items = []
         for video in resp.json().get("items", []):
-            vid_id = video["id"]["videoId"]
+            vid_id = video.get("id", {}).get("videoId")
+            if not vid_id:
+                continue
             snippet = video["snippet"]
             thumbnail = snippet.get("thumbnails", {}).get("medium", {}).get("url")
-            summary = self._get_transcript_summary(vid_id) or self.truncate_summary(snippet.get("description", ""))
+            summary = self._get_transcript_summary(vid_id) or self.truncate_summary(snippet.get("description", "")) or None
             items.append(ScrapedItem(
                 wineId=wine_id,
                 sourceType=self.source_type,

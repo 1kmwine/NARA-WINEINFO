@@ -71,3 +71,12 @@ def test_youtube_scraper_with_api(monkeypatch):
     assert items[0].sourceType == "youtube"
     assert items[0].url == "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
     assert items[0].thumbnailUrl is not None
+    assert items[0].publishedAt == "2024-03-15"
+    assert items[0].extra == {"channelTitle": "와인채널"}
+
+
+def test_youtube_scraper_no_api_key(monkeypatch):
+    monkeypatch.delenv("YOUTUBE_API_KEY", raising=False)
+    scraper = YouTubeScraper()
+    items = scraper.scrape_wine(1, "chateau-margaux", "샤토 마고")
+    assert items == []
