@@ -1,64 +1,44 @@
-type AwardBadgeProps = {
-  vintage: number
-  source: string
-  score: number
+import type { Award } from '@prisma/client'
+
+interface AwardBadgeProps {
+  award: Award
 }
 
-export default function AwardBadge({ vintage, source, score }: AwardBadgeProps) {
+export function AwardBadge({ award }: AwardBadgeProps) {
   return (
     <div className="inline-flex items-center gap-1 text-sm">
-      <span className="text-gray-700 font-medium">{vintage}</span>
-      <span className="bg-gray-700 text-white text-xs font-bold px-2 py-0.5 rounded">
-        {source}
+      <span className="text-gray-600">{award.vintage}</span>
+      <span className="px-1.5 py-0.5 bg-gray-800 text-white text-xs font-bold rounded">
+        {award.source}
       </span>
       <span
-        className="text-white text-xs font-bold px-2 py-0.5 rounded"
-        style={{ backgroundColor: '#7b2335' }}
+        className="px-1.5 py-0.5 text-white text-xs font-bold rounded"
+        style={{ background: '#7b2335' }}
       >
-        {score}
+        {award.score}
       </span>
     </div>
   )
 }
 
-type AwardListProps = {
-  awards: {
-    id: number
-    vintage: number
-    source: string
-    score: number
-  }[]
-  showAll?: boolean
+interface AwardListProps {
+  awards: Award[]
+  maxVisible?: number
 }
 
-export function AwardList({ awards, showAll = false }: AwardListProps) {
-  const displayed = showAll ? awards : awards.slice(0, 6)
-
-  // Group by vintage, sorted desc
-  const grouped = displayed.reduce<Record<number, typeof awards>>((acc, award) => {
-    if (!acc[award.vintage]) acc[award.vintage] = []
-    acc[award.vintage].push(award)
-    return acc
-  }, {})
-
-  const vintages = Object.keys(grouped)
-    .map(Number)
-    .sort((a, b) => b - a)
+export function AwardList({ awards, maxVisible = 3 }: AwardListProps) {
+  if (!awards.length) return null
+  const visible = awards.slice(0, maxVisible)
+  const rest = awards.length - maxVisible
 
   return (
-    <div className="space-y-3">
-      {vintages.map((vintage) => (
-        <div key={vintage} className="flex flex-wrap gap-2 items-center">
-          {grouped[vintage].map((award) => (
-            <AwardBadge
-              key={award.id}
-              vintage={award.vintage}
-              source={award.source}
-              score={award.score}
-            />
-          ))}
-        </div>
+    <div className="space-y-1.5">
+      {visible.map((a) => (
+        <AwardBadge key={a.id} award={a} />
       ))}
+      {rest > 0 && (
+        <p className="text-xs text-gray-400 mt-1">+ {rest}개 더보기</p>
+      )}
     </div>
   )
 }

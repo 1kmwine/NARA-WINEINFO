@@ -1,88 +1,60 @@
-'use client'
-
-type ScaleBarProps = {
+interface ScaleBarProps {
   label: string
-  value?: number | null
+  value: number | null | undefined
   min?: number
   max?: number
-  leftLabel?: string
-  rightLabel?: string
+  minLabel?: string
+  maxLabel?: string
 }
 
-export default function ScaleBar({
-  label,
-  value,
-  min = 1,
-  max = 5,
-  leftLabel,
-  rightLabel,
-}: ScaleBarProps) {
-  const total = max - min + 1
-  const filled = value != null ? Math.min(Math.max(value - min + 1, 0), total) : 0
-
+export function ScaleBar({ label, value, minLabel, maxLabel }: ScaleBarProps) {
+  const filled = value ?? 0
   return (
-    <div className="flex items-center gap-3">
-      <div className="w-16 text-right">
-        <span className="text-sm font-medium text-gray-700">{label}</span>
-      </div>
-      <div className="flex items-center gap-1.5">
-        {Array.from({ length: total }).map((_, i) => (
+    <div className="flex items-center gap-2 py-1">
+      <span className="spec-label w-8 text-right text-xs shrink-0">{label}</span>
+      <div className="flex gap-1">
+        {Array.from({ length: 5 }, (_, i) => (
           <div
             key={i}
-            className="w-5 h-5 rounded-full border-2 transition-colors"
-            style={{
-              backgroundColor: i < filled ? '#7b2335' : '#e5e5e5',
-              borderColor: i < filled ? '#7b2335' : '#e5e5e5',
-            }}
+            className="w-3 h-3 rounded-full"
+            style={{ background: i < filled ? '#7b2335' : '#e5e7eb' }}
           />
         ))}
       </div>
-      {leftLabel && rightLabel && (
-        <div className="flex items-center gap-1 text-xs text-gray-400">
-          <span>{leftLabel}</span>
-          <span>/</span>
-          <span>{rightLabel}</span>
-        </div>
+      {minLabel && maxLabel && (
+        <span className="text-xs text-gray-400 ml-1">
+          {filled <= 2 ? minLabel : filled >= 4 ? maxLabel : ''}
+        </span>
       )}
     </div>
   )
 }
 
-type ScaleGroupProps = {
+interface ScaleGroupProps {
   sweetness?: number | null
   acidity?: number | null
   body?: number | null
   tannin?: number | null
+  fizz?: number | null
 }
 
-export function ScaleGroup({ sweetness, acidity, body, tannin }: ScaleGroupProps) {
+export function ScaleGroup({ sweetness, acidity, body, tannin, fizz }: ScaleGroupProps) {
   return (
-    <div className="space-y-3 py-2">
-      <ScaleBar
-        label="당도"
-        value={sweetness}
-        leftLabel="드라이"
-        rightLabel="스위트"
-      />
-      <ScaleBar
-        label="산도"
-        value={acidity}
-        leftLabel="낮음"
-        rightLabel="높음"
-      />
-      <ScaleBar
-        label="바디"
-        value={body}
-        leftLabel="가벼움"
-        rightLabel="무거움"
-      />
+    <div className="space-y-1">
+      {sweetness != null && (
+        <ScaleBar label="당도" value={sweetness} minLabel="드라이" maxLabel="스위트" />
+      )}
+      {acidity != null && (
+        <ScaleBar label="산도" value={acidity} minLabel="낮음" maxLabel="높음" />
+      )}
+      {body != null && (
+        <ScaleBar label="바디" value={body} minLabel="가벼움" maxLabel="무거움" />
+      )}
       {tannin != null && (
-        <ScaleBar
-          label="타닌"
-          value={tannin}
-          leftLabel="부드러움"
-          rightLabel="강함"
-        />
+        <ScaleBar label="타닌" value={tannin} minLabel="낮음" maxLabel="높음" />
+      )}
+      {fizz != null && (
+        <ScaleBar label="기포" value={fizz} minLabel="낮음" maxLabel="높음" />
       )}
     </div>
   )
