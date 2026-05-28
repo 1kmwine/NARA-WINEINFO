@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Winery {
+  id          Int      @id @default(autoincrement())
+  nameKo      String
+  nameEn      String
+  country     String
+  region      String?
+  description String?
+  history     String?
+  logoUrl     String?
+  websiteUrl  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  wines       Wine[]
+}
+
+model Grape {
+  id      Int         @id @default(autoincrement())
+  nameKo  String
+  nameEn  String
+  wines   WineGrape[]
+}
+
+model Wine {
+  id               Int           @id @default(autoincrement())
+  slug             String        @unique
+  nameKo           String
+  nameEn           String
+  subtitle         String?
+  winery           Winery?       @relation(fields: [wineryId], references: [id])
+  wineryId         Int?
+  type             String        // red, white, rose, sparkling, dessert
+  country          String
+  regionL1         String        // e.g. 캘리포니아
+  regionL2         String?       // e.g. 나파 밸리
+  volume           Int           @default(750)
+  servingTempMin   Int?
+  servingTempMax   Int?
+  foodPairing      String        @default("[]") // JSON array of strings
+  sweetness        Int?          // 1-5
+  acidity          Int?          // 1-5
+  body             Int?          // 1-5
+  tannin           Int?          // 1-5
+  description      String?
+  wineryDesc       String?
+  wineStory        String?
+  checkpoints      String        @default("[]") // JSON array of {label, text}
+  tastingNotes     String?
+  productionMethod String?
+  bottleImageUrl   String?
+  images           String        @default("[]") // JSON array of URLs
+  isPublished      Boolean       @default(true)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  grapes           WineGrape[]
+  awards           Award[]
+  scrapedData      ScrapedData[]
+}
+
+model WineGrape {
+  wine       Wine   @relation(fields: [wineId], references: [id])
+  wineId     Int
+  grape      Grape  @relation(fields: [grapeId], references: [id])
+  grapeId    Int
+  percentage Int?
+
+  @@id([wineId, grapeId])
+}
+
+model Award {
+  id      Int    @id @default(autoincrement())
+  wine    Wine   @relation(fields: [wineId], references: [id])
+  wineId  Int
+  vintage Int
+  source  String // WS, RP, WE, JH, D, etc.
+  score   Int
+}
+
+model ScrapedData {
+  id          Int       @id @default(autoincrement())
+  wine        Wine      @relation(fields: [wineId], references: [id])
+  wineId      Int
+  sourceType  String    // naver_blog, naver_cafe, youtube, instagram, wine_searcher, winery_official, article, other
+  sourceName  String?
+  title       String?
+  url         String?
+  content     String?
+  author      String?
+  publishedAt DateTime?
+  scrapedAt   DateTime  @default(now())
+  metadata    String    @default("{}") // JSON
+}
