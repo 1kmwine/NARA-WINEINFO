@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { prisma } from '@/lib/db'
+import { wineRepo } from '@/lib/wine-repository'
 import { wineTypeLabel, formatVolume, formatServingTemp, parseJsonField } from '@/lib/utils'
 import { ScaleGroup } from '@/components/ScaleBar'
 import { AwardList } from '@/components/AwardBadge'
@@ -11,22 +11,7 @@ import { AllScrapedSections } from '@/components/ScrapedSection'
 type Params = { slug: string }
 
 async function getWine(slug: string) {
-  return prisma.wine.findUnique({
-    where: { slug, isPublished: true },
-    include: {
-      winery: true,
-      grapes: {
-        include: { grape: true },
-        orderBy: { percentage: 'desc' },
-      },
-      awards: {
-        orderBy: [{ vintage: 'desc' }, { score: 'desc' }],
-      },
-      scrapedData: {
-        orderBy: { scrapedAt: 'desc' },
-      },
-    },
-  })
+  return wineRepo.findBySlug(slug)
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
@@ -59,7 +44,7 @@ export default async function WineDetailPage({ params }: { params: Params }) {
   if (!wine) notFound()
 
   const foodPairing = parseJsonField<string[]>(wine.foodPairing, [])
-  const images = parseJsonField<string[]>(wine.images, [])
+  const images = (wine.images ?? []).map((img) => img.url)
   const checkpoints = parseJsonField<CheckPoint[]>(wine.checkpoints, [])
 
   const grapeDisplay = wine.grapes
@@ -201,7 +186,7 @@ export default async function WineDetailPage({ params }: { params: Params }) {
       )}
 
       {/* Winery description */}
-      {(wine.winery?.description || wine.wineryDesc) && (
+      {wine.winery?.description && (
         <>
           <SectionHeader title="와이너리 소개" />
           <div className="flex gap-4 items-start">
@@ -226,7 +211,7 @@ export default async function WineDetailPage({ params }: { params: Params }) {
                 </Link>
               )}
               <p className="text-sm text-gray-600 mt-2 leading-relaxed whitespace-pre-wrap">
-                {wine.winery?.description ?? wine.wineryDesc}
+                {wine.winery?.description}
               </p>
               {wine.winery?.history && (
                 <p className="text-sm text-gray-500 mt-2 leading-relaxed whitespace-pre-wrap">
