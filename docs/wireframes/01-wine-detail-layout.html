@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>와인 상세 페이지 레이아웃 옵션</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; background: #f5f4f0; color: #333; }
+  h1 { text-align: center; padding: 32px 20px 8px; font-size: 22px; color: #1a1a1a; }
+  .subtitle { text-align: center; color: #888; font-size: 14px; margin-bottom: 32px; }
+  .options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1400px; margin: 0 auto; padding: 0 20px 40px; }
+  .option { background: #fff; border-radius: 12px; border: 3px solid #e0e0e0; overflow: hidden; cursor: pointer; transition: all 0.2s; }
+  .option:hover { border-color: #7b2335; box-shadow: 0 8px 24px rgba(123,35,53,0.15); transform: translateY(-2px); }
+  .option.selected { border-color: #7b2335; box-shadow: 0 8px 24px rgba(123,35,53,0.2); }
+  .option-label { background: #7b2335; color: #fff; text-align: center; padding: 8px; font-size: 13px; font-weight: bold; letter-spacing: 1px; }
+  .option-title { padding: 14px 16px 4px; font-size: 15px; font-weight: bold; color: #1a1a1a; }
+  .option-desc { padding: 4px 16px 14px; font-size: 12px; color: #888; line-height: 1.5; }
+
+  /* Wireframe styles */
+  .wf { padding: 12px; background: #fafafa; }
+  .wf-nav { height: 36px; background: #2c0a12; border-radius: 4px; margin-bottom: 8px; display: flex; align-items: center; padding: 0 10px; gap: 8px; }
+  .wf-nav-dot { width: 50px; height: 8px; background: rgba(255,255,255,0.4); border-radius: 2px; }
+  .wf-nav-dot.wide { width: 80px; }
+
+  /* Option A: 이머시브 히어로 */
+  .wf-hero-full { height: 120px; background: linear-gradient(135deg, #2c0a12, #7b2335); border-radius: 6px; display: flex; align-items: center; padding: 16px; gap: 12px; margin-bottom: 8px; }
+  .wf-bottle-hero { width: 40px; height: 90px; background: rgba(255,255,255,0.15); border-radius: 3px; flex-shrink: 0; }
+  .wf-hero-text { flex: 1; }
+  .wf-hero-t1 { height: 8px; background: rgba(255,255,255,0.8); border-radius: 2px; margin-bottom: 5px; width: 80%; }
+  .wf-hero-t2 { height: 6px; background: rgba(255,255,255,0.4); border-radius: 2px; margin-bottom: 5px; width: 60%; }
+  .wf-hero-badges { display: flex; gap: 4px; margin-top: 8px; }
+  .wf-badge { height: 16px; width: 32px; background: rgba(255,255,255,0.2); border-radius: 10px; }
+  .wf-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+  .wf-card { background: #f0f0f0; border-radius: 4px; padding: 8px; }
+  .wf-card-title { height: 6px; background: #7b2335; border-radius: 2px; margin-bottom: 4px; width: 40%; }
+  .wf-card-row { height: 5px; background: #ddd; border-radius: 2px; margin-bottom: 3px; }
+  .wf-scrape-tabs { display: flex; gap: 4px; margin-bottom: 6px; }
+  .wf-tab { height: 20px; background: #e8e8e8; border-radius: 4px; flex: 1; }
+  .wf-tab.active { background: #7b2335; }
+  .wf-scrape-list { background: #f5f5f5; border-radius: 4px; padding: 6px; }
+  .wf-scrape-item { height: 28px; background: #fff; border-radius: 3px; margin-bottom: 3px; display: flex; align-items: center; padding: 0 6px; gap: 4px; }
+  .wf-scrape-dot { width: 6px; height: 6px; background: #7b2335; border-radius: 50%; flex-shrink: 0; }
+  .wf-scrape-line { height: 5px; background: #eee; border-radius: 2px; flex: 1; }
+
+  /* Option B: 사이드바 레이아웃 */
+  .wf-b-layout { display: grid; grid-template-columns: 100px 1fr; gap: 6px; margin-bottom: 6px; }
+  .wf-sidebar { background: #f8f4f4; border-radius: 4px; padding: 8px; }
+  .wf-bottle-side { width: 60px; height: 80px; background: linear-gradient(#aaa, #888); border-radius: 3px; margin: 0 auto 6px; }
+  .wf-side-stat { height: 5px; background: #ddd; border-radius: 2px; margin-bottom: 4px; }
+  .wf-side-stat.red { background: #c0392b; width: 60%; }
+  .wf-main { }
+  .wf-main-title { height: 10px; background: #222; border-radius: 2px; margin-bottom: 4px; width: 80%; }
+  .wf-main-sub { height: 6px; background: #7b2335; border-radius: 2px; margin-bottom: 8px; width: 50%; }
+  .wf-spec-row { display: flex; gap: 4px; margin-bottom: 3px; align-items: center; }
+  .wf-spec-label { width: 40px; height: 5px; background: #7b2335; border-radius: 2px; flex-shrink: 0; }
+  .wf-spec-val { height: 5px; background: #ddd; border-radius: 2px; flex: 1; }
+  .wf-scale-row { display: flex; gap: 2px; margin-bottom: 3px; align-items: center; }
+  .wf-scale-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .wf-scale-dot.filled { background: #7b2335; }
+  .wf-scale-dot.empty { background: #e0e0e0; }
+  .wf-section-sep { height: 1px; background: #eee; margin: 6px 0; }
+
+  /* Option C: 매거진 그리드 */
+  .wf-c-top { display: grid; grid-template-columns: 80px 1fr; gap: 8px; margin-bottom: 6px; align-items: start; }
+  .wf-bottle-med { width: 60px; height: 100px; background: linear-gradient(#666,#444); border-radius: 2px; }
+  .wf-c-info { }
+  .wf-c-title { height: 11px; background: #111; border-radius: 2px; margin-bottom: 5px; }
+  .wf-c-winery { height: 7px; background: #7b2335; border-radius: 2px; margin-bottom: 8px; width: 60%; }
+  .wf-c-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 6px; }
+  .wf-tag { height: 14px; width: 36px; background: #f0e8e8; border: 1px solid #c0392b; border-radius: 10px; }
+  .wf-c-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-bottom: 6px; }
+  .wf-c-cell { background: #f5f5f5; border-radius: 4px; padding: 6px; }
+  .wf-c-cell-title { height: 5px; background: #7b2335; border-radius: 2px; margin-bottom: 3px; width: 50%; }
+  .wf-c-cell-val { height: 8px; background: #ddd; border-radius: 2px; }
+  .wf-c-scrape { background: #fff8f5; border: 1px solid #f0ddd8; border-radius: 4px; padding: 6px; }
+  .wf-c-scrape-header { display: flex; gap: 3px; margin-bottom: 4px; flex-wrap: wrap; }
+  .wf-c-src { height: 12px; width: 28px; background: #e8e8e8; border-radius: 3px; font-size: 0; }
+  .wf-c-src.active { background: #7b2335; }
+  .wf-c-item { height: 24px; background: #fff; border-radius: 3px; margin-bottom: 3px; display: flex; align-items: center; padding: 0 5px; gap: 4px; }
+  .wf-c-item-icon { width: 14px; height: 14px; background: #f0e8e8; border-radius: 3px; flex-shrink: 0; }
+  .wf-c-item-text { flex: 1; height: 4px; background: #eee; border-radius: 2px; }
+
+  .selected-badge { display: none; text-align: center; padding: 6px; background: #7b2335; color: #fff; font-size: 11px; font-weight: bold; border-radius: 0 0 8px 8px; }
+  .option.selected .selected-badge { display: block; }
+  .submit-area { text-align: center; padding: 20px; }
+  .submit-btn { background: #7b2335; color: #fff; border: none; padding: 12px 32px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+  .submit-btn:disabled { background: #ccc; cursor: default; }
+</style>
+</head>
+<body>
+<h1>와인 상세 페이지 레이아웃</h1>
+<p class="subtitle">어떤 방향이 가장 잘 맞나요? 클릭해서 선택하세요</p>
+
+<div class="options">
+
+  <!-- Option A -->
+  <div class="option" id="optA" onclick="select('A')">
+    <div class="option-label">옵션 A — 이머시브 히어로</div>
+    <div class="wf">
+      <div class="wf-nav">
+        <div class="wf-nav-dot wide"></div>
+        <div class="wf-nav-dot"></div><div class="wf-nav-dot"></div><div class="wf-nav-dot"></div>
+      </div>
+      <!-- Full-width dark hero with bottle -->
+      <div class="wf-hero-full">
+        <div class="wf-bottle-hero"></div>
+        <div class="wf-hero-text">
+          <div class="wf-hero-t1"></div>
+          <div class="wf-hero-t2"></div>
+          <div class="wf-hero-badges">
+            <div class="wf-badge"></div><div class="wf-badge"></div><div class="wf-badge"></div>
+          </div>
+        </div>
+      </div>
+      <!-- 2-col specs -->
+      <div class="wf-two-col">
+        <div class="wf-card">
+          <div class="wf-card-title"></div>
+          <div class="wf-card-row"></div><div class="wf-card-row"></div><div class="wf-card-row" style="width:70%"></div>
+        </div>
+        <div class="wf-card">
+          <div class="wf-card-title"></div>
+          <div style="display:flex;gap:2px;margin-bottom:3px;">
+            <div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div>
+            <div class="wf-scale-dot empty"></div><div class="wf-scale-dot empty"></div><div class="wf-scale-dot empty"></div>
+          </div>
+          <div style="display:flex;gap:2px;margin-bottom:3px;">
+            <div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div>
+            <div class="wf-scale-dot empty"></div><div class="wf-scale-dot empty"></div>
+          </div>
+          <div style="display:flex;gap:2px;">
+            <div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Tab-style scraped sources -->
+      <div class="wf-scrape-tabs">
+        <div class="wf-tab active"></div><div class="wf-tab"></div><div class="wf-tab"></div><div class="wf-tab"></div>
+      </div>
+      <div class="wf-scrape-list">
+        <div class="wf-scrape-item"><div class="wf-scrape-dot"></div><div class="wf-scrape-line"></div></div>
+        <div class="wf-scrape-item"><div class="wf-scrape-dot"></div><div class="wf-scrape-line" style="width:70%"></div></div>
+        <div class="wf-scrape-item"><div class="wf-scrape-dot"></div><div class="wf-scrape-line" style="width:85%"></div></div>
+      </div>
+    </div>
+    <div class="option-title">이머시브 히어로 + 탭 스크래핑</div>
+    <div class="option-desc">전체폭 어두운 히어로 섹션에 병 이미지와 핵심 정보 배치. 스크래핑 결과는 소스별 탭으로 구분. 프리미엄 와인 쇼케이스 느낌.</div>
+    <div class="selected-badge">✓ 선택됨</div>
+  </div>
+
+  <!-- Option B -->
+  <div class="option" id="optB" onclick="select('B')">
+    <div class="option-label">옵션 B — 사이드바 고정</div>
+    <div class="wf">
+      <div class="wf-nav">
+        <div class="wf-nav-dot wide"></div>
+        <div class="wf-nav-dot"></div><div class="wf-nav-dot"></div><div class="wf-nav-dot"></div>
+      </div>
+      <div class="wf-b-layout">
+        <!-- Sticky sidebar -->
+        <div class="wf-sidebar">
+          <div class="wf-bottle-side"></div>
+          <div class="wf-side-stat red"></div>
+          <div class="wf-side-stat" style="width:80%"></div>
+          <div class="wf-section-sep"></div>
+          <div style="display:flex;gap:2px;margin-bottom:3px;justify-content:center;">
+            <div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div>
+            <div class="wf-scale-dot empty"></div><div class="wf-scale-dot empty"></div><div class="wf-scale-dot empty"></div>
+          </div>
+          <div style="display:flex;gap:2px;margin-bottom:3px;justify-content:center;">
+            <div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div>
+            <div class="wf-scale-dot empty"></div><div class="wf-scale-dot empty"></div>
+          </div>
+          <div style="display:flex;gap:2px;justify-content:center;">
+            <div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div><div class="wf-scale-dot filled"></div>
+          </div>
+        </div>
+        <!-- Main scrollable content -->
+        <div class="wf-main">
+          <div class="wf-main-title"></div>
+          <div class="wf-main-sub"></div>
+          <div class="wf-spec-row"><div class="wf-spec-label"></div><div class="wf-spec-val"></div></div>
+          <div class="wf-spec-row"><div class="wf-spec-label"></div><div class="wf-spec-val" style="width:60%"></div></div>
+          <div class="wf-spec-row"><div class="wf-spec-label"></div><div class="wf-spec-val" style="width:80%"></div></div>
+          <div class="wf-section-sep"></div>
+          <div style="height:6px;background:#ccc;border-radius:2px;margin-bottom:3px;"></div>
+          <div style="height:5px;background:#eee;border-radius:2px;margin-bottom:2px;"></div>
+          <div style="height:5px;background:#eee;border-radius:2px;width:80%;margin-bottom:6px;"></div>
+          <div class="wf-section-sep"></div>
+          <div class="wf-scrape-list">
+            <div class="wf-scrape-item"><div class="wf-scrape-dot"></div><div class="wf-scrape-line"></div></div>
+            <div class="wf-scrape-item"><div class="wf-scrape-dot"></div><div class="wf-scrape-line" style="width:75%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="option-title">스티키 사이드바 + 스크롤 본문</div>
+    <div class="option-desc">왼쪽에 병 이미지·척도 고정 사이드바, 오른쪽에 상세 정보 스크롤. 스크롤해도 병과 척도가 항상 보임. 정보 밀도 높음.</div>
+    <div class="selected-badge">✓ 선택됨</div>
+  </div>
+
+  <!-- Option C -->
+  <div class="option" id="optC" onclick="select('C')">
+    <div class="option-label">옵션 C — 매거진 그리드</div>
+    <div class="wf">
+      <div class="wf-nav">
+        <div class="wf-nav-dot wide"></div>
+        <div class="wf-nav-dot"></div><div class="wf-nav-dot"></div><div class="wf-nav-dot"></div>
+      </div>
+      <div class="wf-c-top">
+        <div>
+          <div class="wf-bottle-med"></div>
+        </div>
+        <div class="wf-c-info">
+          <div class="wf-c-title"></div>
+          <div class="wf-c-winery"></div>
+          <div class="wf-c-tags">
+            <div class="wf-tag"></div><div class="wf-tag"></div><div class="wf-tag"></div>
+          </div>
+          <div class="wf-spec-row"><div class="wf-spec-label"></div><div class="wf-spec-val"></div></div>
+          <div class="wf-spec-row"><div class="wf-spec-label"></div><div class="wf-spec-val" style="width:60%"></div></div>
+        </div>
+      </div>
+      <!-- 3-col stat grid -->
+      <div class="wf-c-grid">
+        <div class="wf-c-cell"><div class="wf-c-cell-title"></div><div class="wf-c-cell-val"></div></div>
+        <div class="wf-c-cell"><div class="wf-c-cell-title"></div><div class="wf-c-cell-val"></div></div>
+        <div class="wf-c-cell"><div class="wf-c-cell-title"></div><div class="wf-c-cell-val"></div></div>
+      </div>
+      <!-- Scraped sources as icon grid -->
+      <div class="wf-c-scrape">
+        <div class="wf-c-scrape-header">
+          <div class="wf-c-src active"></div><div class="wf-c-src"></div><div class="wf-c-src"></div>
+          <div class="wf-c-src"></div><div class="wf-c-src"></div>
+        </div>
+        <div class="wf-c-item"><div class="wf-c-item-icon"></div><div class="wf-c-item-text"></div></div>
+        <div class="wf-c-item"><div class="wf-c-item-icon"></div><div class="wf-c-item-text" style="width:70%"></div></div>
+        <div class="wf-c-item"><div class="wf-c-item-icon"></div><div class="wf-c-item-text" style="width:85%"></div></div>
+      </div>
+    </div>
+    <div class="option-title">컴팩트 상단 + 카드 그리드</div>
+    <div class="option-desc">병·기본정보를 상단에 컴팩트하게, 그 아래 3열 스탯 카드 그리드. 스크래핑 소스는 필터 칩으로 전환. 정보 스캔에 최적화.</div>
+    <div class="selected-badge">✓ 선택됨</div>
+  </div>
+
+</div>
+
+<div class="submit-area">
+  <p style="color:#888;font-size:13px;margin-bottom:12px;" id="hint">옵션을 클릭해서 선택한 후 Claude에게 답변해주세요</p>
+</div>
+
+<script>
+  let selected = null;
+  function select(id) {
+    document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+    document.getElementById('opt' + id).classList.add('selected');
+    selected = id;
+    document.getElementById('hint').textContent = `옵션 ${id} 선택됨 — Claude 채팅창에 "${id}" 또는 원하는 내용을 입력해주세요`;
+  }
+</script>
+</body>
+</html>
