@@ -1,5 +1,5 @@
 # scripts/scraper/sources/wine_searcher.py
-import re
+from urllib.parse import quote
 from base_scraper import BaseScraper
 from db_client import ScrapedItem
 
@@ -9,7 +9,8 @@ class WineSearcherScraper(BaseScraper):
     SEARCH_URL = "https://www.wine-searcher.com/find/{slug}/1/korea"
 
     def scrape_wine(self, wine_id: int, wine_slug: str, wine_name_ko: str) -> list[ScrapedItem]:
-        url = self.SEARCH_URL.format(slug=wine_slug.replace("-", "+"))
+        encoded_slug = quote(wine_slug, safe="").replace("-", "+")
+        url = self.SEARCH_URL.format(slug=encoded_slug)
         try:
             html = self.fetch(url)
         except RuntimeError:

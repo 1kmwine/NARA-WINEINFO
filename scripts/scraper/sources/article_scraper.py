@@ -1,6 +1,5 @@
 # scripts/scraper/sources/article_scraper.py
-import re
-import requests
+from urllib.parse import quote, urljoin
 from base_scraper import BaseScraper
 from db_client import ScrapedItem
 import config
@@ -47,7 +46,7 @@ class ArticleScraper(BaseScraper):
         items: list[ScrapedItem] = []
         for source in self.sources:
             try:
-                url = source["search_url"].format(query=requests.utils.quote(query))
+                url = source["search_url"].format(query=quote(query))
                 html = self.fetch(url)
                 soup = self.parse(html)
                 for article in soup.select(source["result_sel"])[:3]:
@@ -55,10 +54,9 @@ class ArticleScraper(BaseScraper):
                     desc_el = article.select_one(source["desc_sel"])
                     if not title_el:
                         continue
-                    article_url = title_el.get("href", url)
-                    if not article_url.startswith("http"):
-                        base = re.match(r"https?://[^/]+", url)
-                        article_url = (base.group(0) if base else "") + article_url
+                    article_url = urljoin(url, title_el.get("href", ""))
+                    if not article_url:
+                        article_url = url
                     items.append(ScrapedItem(
                         wineId=wine_id,
                         sourceType=self.source_type,

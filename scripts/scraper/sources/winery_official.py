@@ -7,6 +7,7 @@ class WineryOfficialScraper(BaseScraper):
     source_type = "winery_official"
 
     def scrape_wine(self, wine_id: int, wine_slug: str, wine_name_ko: str) -> list[ScrapedItem]:
+        # winery URL comes from external caller via scrape_winery_url
         return []
 
     def scrape_winery_url(self, wine_id: int, winery_url: str, wine_name_ko: str) -> list[ScrapedItem]:
@@ -34,7 +35,7 @@ class WineryOfficialScraper(BaseScraper):
             sourceType=self.source_type,
             url=winery_url,
             title=f"{wine_name_ko} — 와이너리 공식",
-            summary=self.truncate_summary(summary),
+            summary=self.truncate_summary(summary) or None,
             publishedAt=None,
             thumbnailUrl=None,
             extra={},
