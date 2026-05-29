@@ -1,0 +1,60 @@
+name: Weekly Wine Scraper
+
+on:
+  schedule:
+    # 매주 일요일 02:00 KST = 토요일 17:00 UTC
+    - cron: "0 17 * * 6"
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "특정 와인 슬러그 (비워두면 전체 실행)"
+        required: false
+        type: string
+      batch_size:
+        description: "배치 크기 (기본 50)"
+        required: false
+        default: "50"
+        type: string
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: scripts/scraper/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r scripts/scraper/requirements.txt
+
+      - name: Run scraper (all wines)
+        if: ${{ !inputs.slug }}
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          cd scripts/scraper
+          python main.py --all --batch-size ${{ inputs.batch_size || 50 }}
+
+      - name: Run scraper (single wine)
+        if: ${{ inputs.slug }}
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          INTERNAL_API_KEY: ${{ secrets.INTERNAL_API_KEY }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          cd scripts/scraper
+          python main.py --slug ${{ inputs.slug }}
