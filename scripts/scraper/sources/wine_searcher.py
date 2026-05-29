@@ -1,128 +1,41 @@
-"""
-Wine-Searcher.com scraper.
-Extracts average price, community ratings, and related data.
-"""
-import logging
+# scripts/scraper/sources/wine_searcher.py
 import re
-import time
-from typing import Optional
-from urllib.parse import quote
-
-import requests
-from bs4 import BeautifulSoup
-
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
-from config import DEFAULT_HEADERS, REQUEST_DELAY, REQUEST_TIMEOUT
-
-logger = logging.getLogger(__name__)
-
-WINE_SEARCHER_BASE = "https://www.wine-searcher.com/find/"
+from base_scraper import BaseScraper
+from db_client import ScrapedItem
 
 
-def _clean_price(price_str: str) -> Optional[float]:
-    """Extract numeric price from string like '$75' or 'KRW 95,000'."""
-    if not price_str:
-        return None
-    match = re.search(r"[\d,]+\.?\d*", price_str.replace(",", ""))
-    if match:
+class WineSearcherScraper(BaseScraper):
+    source_type = "wine_searcher"
+    SEARCH_URL = "https://www.wine-searcher.com/find/{slug}/1/korea"
+
+    def scrape_wine(self, wine_id: int, wine_slug: str, wine_name_ko: str) -> list[ScrapedItem]:
+        url = self.SEARCH_URL.format(slug=wine_slug.replace("-", "+"))
         try:
-            return float(match.group())
-        except ValueError:
-            pass
-    return None
+            html = self.fetch(url)
+        except RuntimeError:
+            return []
+        soup = self.parse(html)
 
-
-def scrape_wine_searcher(
-    wine_id: int,
-    wine_name_en: str,
-    vintage: Optional[int] = None,
-) -> list[dict]:
-    """
-    Scrape Wine-Searcher for price and rating information.
-
-    Args:
-        wine_id: Database ID of the wine
-        wine_name_en: English name of the wine (for search)
-        vintage: Optional specific vintage year to search
-
-    Returns:
-        List of scraped data dicts (typically 0 or 1 item)
-    """
-    # Build search URL
-    slug = wine_name_en.lower().replace(" ", "+")
-    if vintage:
-        url = f"{WINE_SEARCHER_BASE}{quote(slug)}/1/{vintage}"
-    else:
-        url = f"{WINE_SEARCHER_BASE}{quote(slug)}"
-
-    logger.info(f"Scraping Wine-Searcher for: {wine_name_en}")
-
-    try:
-        resp = requests.get(url, headers=DEFAULT_HEADERS, timeout=REQUEST_TIMEOUT)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
-
-        metadata = {"query": wine_name_en, "vintage": vintage}
-        content_parts = []
-
-        # Extract wine title
-        title_el = soup.select_one("h1") or soup.select_one(".wine-name")
-        title = title_el.get_text(strip=True) if title_el else wine_name_en
-
-        # Try to extract average price
-        price_el = (
-            soup.select_one("[data-cy='avg-price']")
-            or soup.select_one(".avg-price")
-            or soup.select_one("span.price")
-        )
-        if price_el:
-            price_text = price_el.get_text(strip=True)
-            price_val = _clean_price(price_text)
-            if price_val:
-                metadata["avgPrice"] = price_val
-                content_parts.append(f"평균 가격: {price_text}")
-
-        # Try to extract community score
-        score_el = (
-            soup.select_one("[data-cy='community-score']")
-            or soup.select_one(".community-score")
-            or soup.select_one(".expert-score")
-        )
+        summary_parts = []
+        score_el = soup.select_one("[data-criticScore], .critic-score, .community-score")
+        price_el = soup.select_one(".price, [itemprop='price']")
         if score_el:
-            score_text = score_el.get_text(strip=True)
-            metadata["communityScore"] = score_text
-            content_parts.append(f"커뮤니티 점수: {score_text}")
-
-        # Extract description if available
-        desc_el = soup.select_one(".wine-description") or soup.select_one("p.description")
+            summary_parts.append(f"점수: {score_el.get_text(strip=True)}")
+        if price_el:
+            summary_parts.append(f"평균가: {price_el.get_text(strip=True)}")
+        desc_el = soup.select_one(".wine-description, .description")
         if desc_el:
-            desc_text = desc_el.get_text(strip=True)
-            content_parts.append(f"설명: {desc_text}")
+            summary_parts.append(desc_el.get_text(strip=True))
 
-        content = "\n".join(content_parts) if content_parts else None
-
-        time.sleep(REQUEST_DELAY)
-
-        return [
-            {
-                "wine_id": wine_id,
-                "source_type": "wine_searcher",
-                "source_name": "Wine-Searcher",
-                "title": title,
-                "url": resp.url,
-                "content": content,
-                "author": None,
-                "published_at": None,
-                "metadata": metadata,
-            }
-        ]
-
-    except requests.RequestException as e:
-        logger.error(f"Request failed for Wine-Searcher: {e}")
-        return []
-    except Exception as e:
-        logger.error(f"Unexpected error scraping Wine-Searcher: {e}")
-        return []
+        if not summary_parts:
+            return []
+        return [ScrapedItem(
+            wineId=wine_id,
+            sourceType=self.source_type,
+            url=url,
+            title=f"{wine_name_ko} — Wine-Searcher",
+            summary=self.truncate_summary(" | ".join(summary_parts)),
+            publishedAt=None,
+            thumbnailUrl=None,
+            extra={},
+        )]
