@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import type { Wine, Winery, Award, WineGrape, Grape } from '@prisma/client'
+import type { Wine, Winery, Award, Grape } from '@prisma/client'
 import { ScaleGroup } from '@/components/ScaleBar'
 import { AwardList } from '@/components/AwardBadge'
 

@@ -27,7 +27,8 @@ function makeUrl(item: ScrapedItem): string {
 
 export async function POST(req: NextRequest) {
   const apiKey = req.headers.get('x-internal-key')
-  if (apiKey !== process.env.INTERNAL_API_KEY && process.env.NODE_ENV === 'production') {
+  const expectedKey = process.env.INTERNAL_API_KEY
+  if (expectedKey && apiKey !== expectedKey) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -58,7 +59,8 @@ export async function POST(req: NextRequest) {
         update: { scrapedAt: new Date() },
       })
       created++
-    } catch {
+    } catch (err) {
+      console.error(`[scrape] upsert failed for url=${item.url}:`, err)
       skipped++
     }
   }

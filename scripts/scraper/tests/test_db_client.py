@@ -5,10 +5,11 @@ from db_client import save_scraped_data, ScrapedItem
 
 @resp_lib.activate
 def test_save_scraped_data_success():
+    # API returns { created, updated, skipped } — matches route.ts response shape
     resp_lib.add(
         resp_lib.POST,
         "http://localhost:3000/api/internal/scrape",
-        json={"ok": True, "id": 42},
+        json={"created": 1, "updated": 0, "skipped": 0},
         status=200,
     )
     item = ScrapedItem(
@@ -22,8 +23,7 @@ def test_save_scraped_data_success():
         extra={},
     )
     result = save_scraped_data(item)
-    assert result["ok"] is True
-    assert result["id"] == 42
+    assert result["created"] == 1
 
 @resp_lib.activate
 def test_save_scraped_data_auth_error():

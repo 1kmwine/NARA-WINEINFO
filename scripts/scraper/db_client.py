@@ -17,8 +17,7 @@ class ScrapedItem:
 
 
 def save_scraped_data(item: ScrapedItem) -> dict:
-    payload = {
-        "wineId": item.wineId,
+    item_payload = {
         "sourceType": item.sourceType,
         "url": item.url,
         "title": item.title,
@@ -26,6 +25,10 @@ def save_scraped_data(item: ScrapedItem) -> dict:
         "publishedAt": item.publishedAt,
         "thumbnailUrl": item.thumbnailUrl,
         **item.extra,
+    }
+    payload = {
+        "items": [item_payload],
+        "wineId": item.wineId,
     }
     resp = requests.post(
         f"{config.API_BASE_URL}/api/internal/scrape",
