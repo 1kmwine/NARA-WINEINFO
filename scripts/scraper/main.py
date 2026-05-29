@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 Usage:
-  python main.py --all                         # 전체 와인 배치 처리
-  python main.py --wine-id 42                  # 단일 와인
-  python main.py --all --batch-size 20         # 배치 크기 조정 (기본 50)
+  python main.py --all                              # 전체 와인 배치 처리
+  python main.py --slug chateau-margaux             # 단일 와인 슬러그
+  python main.py --all --batch-size 20              # 배치 크기 조정 (기본 50)
 """
 import argparse
 import sys
@@ -45,9 +45,9 @@ def fetch_wines(page: int, page_size: int) -> list[dict]:
     return data.get("data", [])
 
 
-def scrape_wine(wine: dict) -> int:
+def process_wine(wine: dict) -> int:
     wine_id = wine["id"]
-    slug = wine["slug"]
+    slug = wine.get("slug", str(wine_id))
     name_ko = wine.get("nameKo", slug)
     winery_url = wine.get("winery", {}).get("websiteUrl", "") if wine.get("winery") else ""
 
@@ -65,7 +65,7 @@ def scrape_wine(wine: dict) -> int:
                 except RuntimeError as e:
                     print(f"[WARN] save failed for {item.url}: {e}", file=sys.stderr)
         except Exception as e:
-            print(f"[ERROR] {scraper.source_type} scrape_wine({wine_id}): {e}", file=sys.stderr)
+            print(f"[ERROR] {scraper.source_type} process_wine({wine_id}): {e}", file=sys.stderr)
     return saved
 
 
@@ -79,34 +79,34 @@ def run_all(batch_size: int):
             break
         print(f"[INFO] Processing page {page} ({len(wines)} wines)")
         for wine in wines:
-            n = scrape_wine(wine)
+            n = process_wine(wine)
             total_wines += 1
             total_saved += n
-            print(f"  [{total_wines}] {wine['slug']} → {n} items saved")
+            print(f"  [{total_wines}] {wine.get('slug', wine.get('id', '?'))} → {n} items saved")
         page += 1
         time.sleep(0.1)
     print(f"[DONE] {total_wines} wines, {total_saved} items saved")
 
 
-def run_single(wine_id: int):
+def run_single(wine_slug: str):
     resp = requests.get(
-        f"{config.API_BASE_URL}/api/wines/{wine_id}",
+        f"{config.API_BASE_URL}/api/wines/{wine_slug}",
         headers=config.HEADERS,
         timeout=config.REQUEST_TIMEOUT,
     )
     if not resp.ok:
-        print(f"[ERROR] Wine {wine_id} not found", file=sys.stderr)
+        print(f"[ERROR] Wine '{wine_slug}' not found", file=sys.stderr)
         sys.exit(1)
     wine = resp.json()
-    n = scrape_wine(wine)
-    print(f"[DONE] {wine['slug']} → {n} items saved")
+    n = process_wine(wine)
+    print(f"[DONE] {wine.get('slug', wine_slug)} → {n} items saved")
 
 
 def main():
     parser = argparse.ArgumentParser(description="NARA WINEINFO 스크래퍼")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--all", action="store_true", help="전체 와인 스크래핑")
-    group.add_argument("--wine-id", type=int, help="단일 와인 ID")
+    group.add_argument("--slug", type=str, help="단일 와인 슬러그")
     parser.add_argument("--batch-size", type=int, default=50, help="페이지당 처리 와인 수")
     args = parser.parse_args()
 
@@ -117,7 +117,7 @@ def main():
     if args.all:
         run_all(args.batch_size)
     else:
-        run_single(args.wine_id)
+        run_single(args.slug)
 
 
 if __name__ == "__main__":

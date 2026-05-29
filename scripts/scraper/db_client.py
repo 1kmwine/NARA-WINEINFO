@@ -10,7 +10,7 @@ class ScrapedItem:
     sourceType: str
     url: str
     title: str
-    summary: str
+    summary: Optional[str]
     publishedAt: Optional[str]
     thumbnailUrl: Optional[str]
     extra: dict[str, Any] = field(default_factory=dict)
@@ -22,7 +22,7 @@ def save_scraped_data(item: ScrapedItem) -> dict:
         "sourceType": item.sourceType,
         "url": item.url,
         "title": item.title,
-        "summary": item.summary[:config.SUMMARY_MAX_CHARS],
+        "summary": item.summary[:config.SUMMARY_MAX_CHARS] if item.summary else None,
         "publishedAt": item.publishedAt,
         "thumbnailUrl": item.thumbnailUrl,
         **item.extra,
