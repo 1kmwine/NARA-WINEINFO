@@ -1,62 +1,64 @@
 # scripts/scraper/sources/naver_cafe.py
-import os
-import re
 import requests
-from typing import Optional
+from typing import List, Optional
 from base_scraper import BaseScraper
 from db_client import ScrapedItem
 import config
 
+DDG_HTML = "https://html.duckduckgo.com/html/"
+
 
 class NaverCafeScraper(BaseScraper):
     source_type = "naver_cafe"
-    SEARCH_API = "https://openapi.naver.com/v1/search/cafearticle.json"
     TARGET_CAFE = "winerack24"
 
-    def scrape_wine(self, wine_id: int, _wine_slug: str, wine_name_ko: str) -> list[ScrapedItem]:
-        client_id = os.environ.get("NAVER_CLIENT_ID", "")
-        client_secret = os.environ.get("NAVER_CLIENT_SECRET", "")
-        if client_id and client_secret:
-            return self._scrape_via_api(wine_id, wine_name_ko, client_id, client_secret)
-        return []
+    def scrape_wine(self, wine_id: int, _wine_slug: str, wine_name_ko: str) -> List[ScrapedItem]:
+        return self._scrape_via_ddg(wine_id, wine_name_ko)
 
-    def _scrape_via_api(self, wine_id: int, query: str, client_id: str, client_secret: str) -> list[ScrapedItem]:
-        self._wait_rate_limit()
-        resp = requests.get(
-            self.SEARCH_API,
-            params={"query": query, "display": config.MAX_RESULTS_PER_SOURCE, "sort": "date"},
-            headers={**config.HEADERS, "X-Naver-Client-Id": client_id, "X-Naver-Client-Secret": client_secret},
-            timeout=config.REQUEST_TIMEOUT,
-        )
-        self._last_request_time = __import__("time").monotonic()
-        if not resp.ok:
-            return []
-        items = []
-        for post in resp.json().get("items", []):
-            if self.TARGET_CAFE and post.get("cafename", "").lower() != self.TARGET_CAFE.lower():
+    def _scrape_via_ddg(self, wine_id: int, query: str) -> List[ScrapedItem]:
+        encoded = requests.utils.quote(query)
+        site = f"site%3Acafe.naver.com%2F{self.TARGET_CAFE}"
+        url = f"{DDG_HTML}?q={site}+{encoded}&kl=kr-kr"
+        html = self.fetch(url)
+        soup = self.parse(html)
+        items: List[ScrapedItem] = []
+        for result in soup.select(".result")[:config.MAX_RESULTS_PER_SOURCE]:
+            title_el = result.select_one(".result__title a.result__a")
+            if not title_el:
                 continue
-            title = re.sub(r"<[^>]+>", "", post.get("title", "")).strip()
-            summary = re.sub(r"<[^>]+>", "", post.get("description", "")).strip()
+            title = title_el.get_text(strip=True)
+            href = title_el.get("href", "")
+            result_url = _unwrap_ddg_url(href)
+            if not result_url or not title:
+                continue
+            snippet_el = result.select_one(".result__snippet")
+            summary = snippet_el.get_text(strip=True) if snippet_el else ""
             items.append(ScrapedItem(
                 wineId=wine_id,
                 sourceType=self.source_type,
-                url=post.get("link", ""),
+                url=result_url,
                 title=title,
                 summary=self.truncate_summary(summary),
-                publishedAt=self._parse_pubdate(post.get("pubDate", "")),
+                publishedAt=None,
                 thumbnailUrl=None,
-                extra={"cafeName": post.get("cafename", ""), "cafeUrl": post.get("cafeurl", "")},
+                extra={"cafeName": self.TARGET_CAFE},
             ))
         return items
 
-    def _parse_pubdate(self, pubdate: str) -> Optional[str]:
-        if not pubdate:
-            return None
+
+def _unwrap_ddg_url(href: str) -> Optional[str]:
+    """Extract the real destination URL from a DuckDuckGo redirect href."""
+    if not href:
+        return None
+    if "uddg=" in href:
         try:
-            from email.utils import parsedate
-            parsed = parsedate(pubdate)
-            if parsed:
-                return f"{parsed[0]:04d}-{parsed[1]:02d}-{parsed[2]:02d}"
+            from urllib.parse import urlparse, parse_qs, unquote
+            parsed = urlparse(href if href.startswith("http") else "https:" + href)
+            uddg = parse_qs(parsed.query).get("uddg", [None])[0]
+            if uddg:
+                return unquote(uddg)
         except Exception:
             pass
-        return None
+    if href.startswith("http"):
+        return href
+    return None
