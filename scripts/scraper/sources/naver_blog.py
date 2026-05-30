@@ -2,6 +2,7 @@
 import os
 import re
 import requests
+from typing import Optional
 from base_scraper import BaseScraper
 from db_client import ScrapedItem
 import config
@@ -72,7 +73,7 @@ class NaverBlogScraper(BaseScraper):
                 ))
         return items
 
-    def _parse_postdate(self, postdate: str) -> str | None:
+    def _parse_postdate(self, postdate: str) -> Optional[str]:
         if len(postdate) == 8:
             return f"{postdate[:4]}-{postdate[4:6]}-{postdate[6:8]}"
         return None

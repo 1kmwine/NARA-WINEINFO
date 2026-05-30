@@ -2,6 +2,7 @@
 import os
 import re
 import requests
+from typing import Optional
 from base_scraper import BaseScraper
 from db_client import ScrapedItem
 import config
@@ -48,7 +49,7 @@ class NaverCafeScraper(BaseScraper):
             ))
         return items
 
-    def _parse_pubdate(self, pubdate: str) -> str | None:
+    def _parse_pubdate(self, pubdate: str) -> Optional[str]:
         if not pubdate:
             return None
         try:

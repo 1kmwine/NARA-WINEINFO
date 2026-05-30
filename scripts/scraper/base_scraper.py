@@ -1,5 +1,6 @@
 import time
 from abc import ABC, abstractmethod
+from typing import Optional
 import requests
 from bs4 import BeautifulSoup
 import config
@@ -21,7 +22,7 @@ class BaseScraper(ABC):
 
     def fetch(self, url: str, **kwargs) -> str:
         self._wait_rate_limit()
-        last_exc: Exception | None = None
+        last_exc: Optional[Exception] = None
         for attempt in range(config.MAX_RETRIES):
             try:
                 resp = requests.get(

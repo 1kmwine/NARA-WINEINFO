@@ -2,6 +2,7 @@
 import os
 import time
 import requests
+from typing import Optional
 from base_scraper import BaseScraper
 from db_client import ScrapedItem
 import config
@@ -58,7 +59,7 @@ class YouTubeScraper(BaseScraper):
             ))
         return items
 
-    def _get_transcript_summary(self, video_id: str) -> str | None:
+    def _get_transcript_summary(self, video_id: str) -> Optional[str]:
         try:
             from youtube_transcript_api import YouTubeTranscriptApi
             transcript = YouTubeTranscriptApi.get_transcript(video_id, languages=["ko", "en"])
