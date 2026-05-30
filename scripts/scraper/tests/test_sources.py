@@ -34,7 +34,8 @@ DDG_CAFE_HTML = """
 
 
 @resp_lib.activate
-def test_naver_blog_scraper_ddg():
+@patch("sources.naver_blog.search_wine_claude", return_value=[])
+def test_naver_blog_scraper_ddg(mock_claude):
     resp_lib.add(
         resp_lib.GET,
         "https://html.duckduckgo.com/html/",
@@ -52,7 +53,8 @@ def test_naver_blog_scraper_ddg():
 
 
 @resp_lib.activate
-def test_naver_blog_scraper_no_results():
+@patch("sources.naver_blog.search_wine_claude", return_value=[])
+def test_naver_blog_scraper_no_results(mock_claude):
     resp_lib.add(
         resp_lib.GET,
         "https://html.duckduckgo.com/html/",
@@ -64,8 +66,24 @@ def test_naver_blog_scraper_no_results():
     assert items == []
 
 
+def test_naver_blog_scraper_claude_primary():
+    """Claude results are used directly when available."""
+    mock_results = [
+        {"title": "샤토 마고 2023 리뷰", "url": "https://blog.naver.com/wine/123", "summary": "훌륭한 와인"},
+    ]
+    with patch("sources.naver_blog.search_wine_claude", return_value=mock_results):
+        scraper = NaverBlogScraper()
+        items = scraper.scrape_wine(1, "chateau-margaux", "샤토 마고")
+    assert len(items) == 1
+    assert items[0].url == "https://blog.naver.com/wine/123"
+    assert items[0].extra.get("source") == "claude_search"
+
+
 @resp_lib.activate
-def test_naver_cafe_scraper_ddg():
+@patch("sources.naver_cafe.search_wine_claude", return_value=[])
+def test_naver_cafe_scraper_ddg(mock_claude):
+    # WASSAP API returns connection error (unregistered) → falls through
+    # Claude search mocked to return [] → falls through to DDG
     resp_lib.add(
         resp_lib.GET,
         "https://html.duckduckgo.com/html/",
@@ -78,6 +96,26 @@ def test_naver_cafe_scraper_ddg():
     assert items[0].sourceType == "naver_cafe"
     assert items[0].url == "https://cafe.naver.com/winerack24/12345"
     assert items[0].extra.get("cafeName") == "winerack24"
+
+
+@resp_lib.activate
+@patch("sources.naver_cafe.search_wine_claude", return_value=[])
+def test_naver_cafe_scraper_wassap(mock_claude):
+    wassap_data = [
+        {"title": "샤토 마고 2023 후기", "url": "https://cafe.naver.com/winerack24/9999", "content": "샤토 마고 정말 맛있어요"},
+        {"title": "전혀 다른 글", "url": "https://cafe.naver.com/winerack24/8888", "content": "관련 없는 내용"},
+    ]
+    resp_lib.add(
+        resp_lib.GET,
+        "https://create-repl--dashnaracellar.replit.app/articles",
+        json=wassap_data,
+        status=200,
+    )
+    scraper = NaverCafeScraper()
+    items = scraper.scrape_wine(3, "chateau-margaux", "샤토 마고")
+    assert len(items) == 1
+    assert items[0].url == "https://cafe.naver.com/winerack24/9999"
+    assert items[0].extra.get("source") == "wassap"
 
 
 MOCK_SCRAPETUBE_VIDEOS = [
@@ -104,7 +142,7 @@ def test_youtube_scraper_scrapetube(monkeypatch):
     assert items[0].sourceType == "youtube"
     assert items[0].url == "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
     assert items[0].thumbnailUrl is not None
-    assert items[0].publishedAt is None  # scrapetube doesn't give ISO dates
+    assert items[0].publishedAt is None
 
 
 def test_youtube_scraper_scrapetube_error(monkeypatch):

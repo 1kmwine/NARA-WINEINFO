@@ -3,21 +3,54 @@ import requests
 from typing import List, Optional
 from base_scraper import BaseScraper
 from db_client import ScrapedItem
+from claude_search_client import search_wine_claude
 import config
 
 DDG_HTML = "https://html.duckduckgo.com/html/"
+BLOG_SITE = "blog.naver.com"
 
 
 class NaverBlogScraper(BaseScraper):
     source_type = "naver_blog"
 
     def scrape_wine(self, wine_id: int, wine_slug: str, wine_name_ko: str) -> List[ScrapedItem]:
+        # Try Claude web search first (requires ANTHROPIC_API_KEY)
+        items = self._scrape_via_claude(wine_id, wine_name_ko)
+        if items:
+            return items
+        # Fallback: DuckDuckGo HTML search
         return self._scrape_via_ddg(wine_id, wine_name_ko)
+
+    def _scrape_via_claude(self, wine_id: int, query: str) -> List[ScrapedItem]:
+        results = search_wine_claude(
+            query=query,
+            site_filter=BLOG_SITE,
+            use_date_filter=True,
+            max_results=config.MAX_RESULTS_PER_SOURCE,
+        )
+        items: List[ScrapedItem] = []
+        for r in results:
+            if not r.get("url") or BLOG_SITE not in r["url"]:
+                continue
+            items.append(ScrapedItem(
+                wineId=wine_id,
+                sourceType=self.source_type,
+                url=r["url"],
+                title=r.get("title", ""),
+                summary=self.truncate_summary(r.get("summary", "")),
+                publishedAt=None,
+                thumbnailUrl=None,
+                extra={"source": "claude_search"},
+            ))
+        return items
 
     def _scrape_via_ddg(self, wine_id: int, query: str) -> List[ScrapedItem]:
         encoded = requests.utils.quote(query)
         url = f"{DDG_HTML}?q=site%3Ablog.naver.com+{encoded}&kl=kr-kr"
-        html = self.fetch(url)
+        try:
+            html = self.fetch(url)
+        except Exception:
+            return []
         soup = self.parse(html)
         items: List[ScrapedItem] = []
         for result in soup.select(".result")[:config.MAX_RESULTS_PER_SOURCE]:
@@ -26,7 +59,6 @@ class NaverBlogScraper(BaseScraper):
                 continue
             title = title_el.get_text(strip=True)
             href = title_el.get("href", "")
-            # DuckDuckGo wraps URLs in a redirect; prefer the uddg param if present
             result_url = _unwrap_ddg_url(href)
             if not result_url or not title:
                 continue
@@ -46,10 +78,8 @@ class NaverBlogScraper(BaseScraper):
 
 
 def _unwrap_ddg_url(href: str) -> Optional[str]:
-    """Extract the real destination URL from a DuckDuckGo redirect href."""
     if not href:
         return None
-    # DuckDuckGo HTML links look like //duckduckgo.com/l/?uddg=<encoded-url>&...
     if "uddg=" in href:
         try:
             from urllib.parse import urlparse, parse_qs, unquote
@@ -59,7 +89,6 @@ def _unwrap_ddg_url(href: str) -> Optional[str]:
                 return unquote(uddg)
         except Exception:
             pass
-    # Fallback: return href as-is if it already looks like a real URL
     if href.startswith("http"):
         return href
     return None
