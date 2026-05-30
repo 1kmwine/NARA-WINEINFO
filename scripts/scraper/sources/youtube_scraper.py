@@ -1,7 +1,5 @@
 # scripts/scraper/sources/youtube_scraper.py
-import os
-import time
-import requests
+import scrapetube
 from typing import Optional
 from base_scraper import BaseScraper
 from db_client import ScrapedItem
@@ -10,52 +8,41 @@ import config
 
 class YouTubeScraper(BaseScraper):
     source_type = "youtube"
-    SEARCH_API = "https://www.googleapis.com/youtube/v3/search"
 
     def scrape_wine(self, wine_id: int, wine_slug: str, wine_name_ko: str) -> list[ScrapedItem]:
-        api_key = os.environ.get("YOUTUBE_API_KEY", "")
-        if not api_key:
-            return []
-        return self._scrape_via_api(wine_id, wine_name_ko, api_key)
-
-    def _scrape_via_api(self, wine_id: int, query: str, api_key: str) -> list[ScrapedItem]:
         self._wait_rate_limit()
+        query = wine_name_ko + " 와인"
         try:
-            resp = requests.get(
-                self.SEARCH_API,
-                params={
-                    "part": "snippet",
-                    "q": query,
-                    "type": "video",
-                    "maxResults": config.MAX_RESULTS_PER_SOURCE,
-                    "relevanceLanguage": "ko",
-                    "key": api_key,
-                },
-                headers=config.HEADERS,
-                timeout=config.REQUEST_TIMEOUT,
-            )
-            self._last_request_time = time.monotonic()
-        except requests.RequestException:
-            return []
-        if not resp.ok:
+            videos = scrapetube.get_search(query, limit=config.MAX_RESULTS_PER_SOURCE)
+        except Exception:
             return []
         items = []
-        for video in resp.json().get("items", []):
-            vid_id = video.get("id", {}).get("videoId")
+        for video in videos:
+            vid_id = video.get("videoId")
             if not vid_id:
                 continue
-            snippet = video["snippet"]
-            thumbnail = snippet.get("thumbnails", {}).get("medium", {}).get("url")
-            summary = self._get_transcript_summary(vid_id) or self.truncate_summary(snippet.get("description", "")) or None
+            title = video.get("title", {}).get("runs", [{}])[0].get("text", "")
+            thumbnail = video.get("thumbnail", {}).get("thumbnails", [{}])[-1].get("url")
+            description = (
+                video.get("detailedMetadataSnippets", [{}])[0]
+                .get("snippetText", {})
+                .get("runs", [{}])[0]
+                .get("text", "")
+            )
+            summary = (
+                self._get_transcript_summary(vid_id)
+                or self.truncate_summary(description)
+                or None
+            )
             items.append(ScrapedItem(
                 wineId=wine_id,
                 sourceType=self.source_type,
                 url=f"https://www.youtube.com/watch?v={vid_id}",
-                title=snippet.get("title", ""),
+                title=title,
                 summary=summary,
-                publishedAt=snippet.get("publishedAt", "")[:10] or None,
+                publishedAt=None,  # scrapetube returns relative time ("2 years ago"), not ISO date
                 thumbnailUrl=thumbnail,
-                extra={"channelTitle": snippet.get("channelTitle", "")},
+                extra={},
             ))
         return items
 
