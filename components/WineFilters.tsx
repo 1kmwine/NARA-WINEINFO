@@ -11,6 +11,31 @@ const TYPES = [
   { value: 'dessert', label: '디저트' },
 ]
 
+function FilterItem({
+  label,
+  active,
+  onClick,
+}: {
+  label: string
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full text-left text-[13px] px-2.5 py-1.5 rounded-r border-l-2 transition-all"
+      style={{
+        color: active ? '#1B4332' : '#6b6b6b',
+        fontWeight: active ? 600 : 400,
+        borderLeftColor: active ? '#1B4332' : 'transparent',
+        background: active ? '#f9f9f9' : 'transparent',
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
 export function WineFilters({ countries }: { countries: string[] }) {
   const router = useRouter()
   const params = useSearchParams()
@@ -23,47 +48,40 @@ export function WineFilters({ countries }: { countries: string[] }) {
     router.push(`/wines?${p.toString()}`)
   }
 
+  const activeType = params.get('type') ?? ''
+  const activeCountry = params.get('country') ?? ''
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">타입</p>
-        <div className="flex flex-wrap gap-2 md:flex-col md:gap-1">
+        <p className="text-[10px] font-medium tracking-[0.06em] uppercase text-[#b3b3b3] mb-3">타입</p>
+        <div className="space-y-0.5">
           {TYPES.map(t => (
-            <button
+            <FilterItem
               key={t.value}
+              label={t.label}
+              active={activeType === t.value}
               onClick={() => update('type', t.value)}
-              className={`text-left text-sm px-3 py-1.5 rounded-lg transition-colors ${
-                (params.get('type') ?? '') === t.value
-                  ? 'text-white font-medium'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-              style={(params.get('type') ?? '') === t.value ? { background: '#7b2335' } : {}}
-            >
-              {t.label}
-            </button>
+            />
           ))}
         </div>
       </div>
       {countries.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">원산지</p>
-          <div className="flex flex-wrap gap-2 md:flex-col md:gap-1">
-            <button
+          <p className="text-[10px] font-medium tracking-[0.06em] uppercase text-[#b3b3b3] mb-3">국가</p>
+          <div className="space-y-0.5">
+            <FilterItem
+              label="전체"
+              active={!activeCountry}
               onClick={() => update('country', '')}
-              className={`text-left text-sm px-3 py-1.5 rounded-lg ${!params.get('country') ? 'text-white font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
-              style={!params.get('country') ? { background: '#7b2335' } : {}}
-            >
-              전체
-            </button>
+            />
             {countries.map(c => (
-              <button
+              <FilterItem
                 key={c}
+                label={c}
+                active={activeCountry === c}
                 onClick={() => update('country', c)}
-                className={`text-left text-sm px-3 py-1.5 rounded-lg ${params.get('country') === c ? 'text-white font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
-                style={params.get('country') === c ? { background: '#7b2335' } : {}}
-              >
-                {c}
-              </button>
+              />
             ))}
           </div>
         </div>

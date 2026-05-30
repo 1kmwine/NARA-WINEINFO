@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { wineRepo } from '@/lib/wine-repository'
-import WineCard from '@/components/WineCard'
 import { WineFilters } from '@/components/WineFilters'
+import { WineGrid } from '@/components/WineGrid'
 import type { WineType } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -22,31 +22,21 @@ export default async function WinesPage({ searchParams }: { searchParams: Search
   ])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">와인 목록</h1>
-      <div className="flex flex-col md:flex-row gap-6">
+    <div className="max-w-[1060px] mx-auto px-8 py-10">
+      <div className="mb-8">
+        <h1 className="text-[22px] font-semibold text-[#111111] tracking-[-0.02em]">와인 컬렉션</h1>
+      </div>
+      <div className="flex flex-col md:flex-row gap-8">
         {/* 필터 사이드바 */}
-        <aside className="md:w-44 shrink-0">
+        <aside className="md:w-36 shrink-0">
           <Suspense>
             <WineFilters countries={countries} />
           </Suspense>
         </aside>
 
         {/* 그리드 */}
-        <div className="flex-1">
-          <p className="text-sm text-gray-500 mb-4">총 {result.total.toLocaleString()}개</p>
-          {result.data.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {result.data.map(wine => (
-                <WineCard key={wine.id} wine={wine} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20 text-gray-400">
-              <p className="text-4xl mb-2">🍾</p>
-              <p>검색 결과가 없습니다</p>
-            </div>
-          )}
+        <div className="flex-1 min-w-0">
+          <WineGrid wines={result.data as Parameters<typeof WineGrid>[0]['wines']} total={result.total} />
 
           {/* 페이지네이션 */}
           {result.totalPages > 1 && (
@@ -55,11 +45,17 @@ export default async function WinesPage({ searchParams }: { searchParams: Search
                 .filter(p => Math.abs(p - page) <= 2 || p === 1 || p === result.totalPages)
                 .map((p, idx, arr) => (
                   <span key={p}>
-                    {idx > 0 && arr[idx - 1] !== p - 1 && <span className="px-2 text-gray-400">…</span>}
+                    {idx > 0 && arr[idx - 1] !== p - 1 && (
+                      <span className="px-2 text-[#b3b3b3]">…</span>
+                    )}
                     <a
                       href={`/wines?${new URLSearchParams({ ...searchParams, page: String(p) })}`}
-                      className={`px-3 py-1.5 rounded-lg text-sm ${p === page ? 'text-white font-medium' : 'text-gray-600 hover:bg-gray-100'}`}
-                      style={p === page ? { background: '#7b2335' } : {}}
+                      className="px-3 py-1.5 rounded-lg text-sm transition-colors"
+                      style={
+                        p === page
+                          ? { background: '#1B4332', color: '#fff', fontWeight: 500 }
+                          : { color: '#6b6b6b' }
+                      }
                     >
                       {p}
                     </a>

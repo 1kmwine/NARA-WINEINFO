@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { wineRepo } from '@/lib/wine-repository'
-import { parseJsonField, wineTypeLabel, wineTypeColor } from '@/lib/utils'
+import { parseJsonField, wineTypeLabel } from '@/lib/utils'
 import { WineDetailSidebar } from '@/components/wine-detail/WineDetailSidebar'
 import { WineSpecTable } from '@/components/wine-detail/WineSpecTable'
 import { AllScrapedSections } from '@/components/wine-detail/ScrapedSourceSection'
@@ -21,8 +21,18 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 function SectionDivider({ title }: { title: string }) {
   return (
     <div className="section-divider">
+      <div className="w-5 h-px shrink-0" style={{ background: '#1B4332' }} />
       <span className="section-divider-title">{title}</span>
+      <div className="flex-1 h-px" style={{ background: '#e8e8e8' }} />
     </div>
+  )
+}
+
+function TypeTag({ type }: { type: string }) {
+  return (
+    <span className="inline-block text-[10px] font-medium tracking-[0.06em] uppercase text-[#6b6b6b] bg-[#f9f9f9] border border-[#e8e8e8] rounded px-1.5 py-0.5">
+      {wineTypeLabel(type)}
+    </span>
   )
 }
 
@@ -33,30 +43,29 @@ export default async function WineDetailPage({ params }: { params: Params }) {
   const checkpoints = parseJsonField<CheckPoint[]>(wine.checkpoints, [])
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* 와인명 헤더 (사이드바 위, 전체폭) */}
-      <div className="mb-6">
-        <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">{wine.nameEn}</p>
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">{wine.nameKo}</h1>
+    <div className="max-w-[940px] mx-auto px-8 py-8">
+      {/* 와인명 헤더 */}
+      <div className="mb-8 pb-8 border-b border-[#e8e8e8]">
+        <p className="text-[10px] font-medium tracking-[0.06em] uppercase text-[#b3b3b3] mb-2.5">
+          {wine.nameEn}
+        </p>
+        <h1 className="text-[28px] font-bold text-[#111111] tracking-[-0.025em] leading-[1.25] mb-3">
+          {wine.nameKo}
+        </h1>
         {wine.subtitle && (
-          <p className="text-sm font-semibold tracking-widest" style={{ color: '#7b2335' }}>
+          <p className="text-sm font-semibold tracking-widest mb-3" style={{ color: '#1B4332' }}>
             {wine.subtitle}
           </p>
         )}
-        <div className="flex items-center gap-2 mt-2">
-          <span
-            className="text-xs text-white px-2 py-0.5 rounded-full font-medium"
-            style={{ background: wineTypeColor(wine.type) }}
-          >
-            {wineTypeLabel(wine.type)}
-          </span>
+        <div className="flex items-center flex-wrap gap-2.5">
+          <TypeTag type={wine.type} />
           {wine.winery && (
-            <span className="text-sm text-gray-500">{wine.winery.nameKo}</span>
+            <span className="text-sm text-[#6b6b6b]">{wine.winery.nameKo}</span>
           )}
         </div>
       </div>
 
-      {/* Option B: 사이드바 + 본문 (데스크탑 flex-row, 모바일 flex-col) */}
+      {/* 사이드바 + 본문 */}
       <div className="flex flex-col md:flex-row gap-8">
         {/* 좌측 사이드바 */}
         <WineDetailSidebar wine={wine} />
@@ -64,7 +73,7 @@ export default async function WineDetailPage({ params }: { params: Params }) {
         {/* 우측 본문 */}
         <div className="flex-1 min-w-0">
           {/* 스펙 테이블 */}
-          <div className="bg-gray-50 rounded-xl p-5 mb-6">
+          <div className="border border-[#e8e8e8] rounded-lg overflow-hidden mb-6">
             <WineSpecTable wine={wine} />
           </div>
 
@@ -75,10 +84,10 @@ export default async function WineDetailPage({ params }: { params: Params }) {
               <div className="space-y-4 mb-6">
                 {checkpoints.map((cp, i) => (
                   <div key={i} className="flex gap-3">
-                    <span className="text-sm font-bold shrink-0" style={{ color: '#7b2335' }}>
+                    <span className="text-sm font-bold shrink-0" style={{ color: '#1B4332' }}>
                       {cp.label}
                     </span>
-                    <p className="text-sm text-gray-700">{cp.text}</p>
+                    <p className="text-sm text-[#3d3d3d]">{cp.text}</p>
                   </div>
                 ))}
               </div>
@@ -89,7 +98,7 @@ export default async function WineDetailPage({ params }: { params: Params }) {
           {wine.wineStory && (
             <>
               <SectionDivider title="와인 스토리" />
-              <p className="text-sm text-gray-700 leading-relaxed mb-6">{wine.wineStory}</p>
+              <p className="text-sm text-[#3d3d3d] leading-relaxed mb-6">{wine.wineStory}</p>
             </>
           )}
 
@@ -102,7 +111,7 @@ export default async function WineDetailPage({ params }: { params: Params }) {
                   <img src={wine.winery.logoUrl} alt={wine.winery.nameKo} className="max-h-20 object-contain" />
                 </div>
               )}
-              <p className="text-sm text-gray-700 leading-relaxed mb-6">{wine.winery.description}</p>
+              <p className="text-sm text-[#3d3d3d] leading-relaxed mb-6">{wine.winery.description}</p>
             </>
           )}
 
@@ -110,7 +119,7 @@ export default async function WineDetailPage({ params }: { params: Params }) {
           {wine.tastingNotes && (
             <>
               <SectionDivider title="테이스팅 노트" />
-              <p className="text-sm text-gray-700 leading-relaxed mb-6">{wine.tastingNotes}</p>
+              <p className="text-sm text-[#3d3d3d] leading-relaxed mb-6">{wine.tastingNotes}</p>
             </>
           )}
 
@@ -118,7 +127,7 @@ export default async function WineDetailPage({ params }: { params: Params }) {
           {wine.productionMethod && (
             <>
               <SectionDivider title="양조 방법" />
-              <p className="text-sm text-gray-700 leading-relaxed mb-6">{wine.productionMethod}</p>
+              <p className="text-sm text-[#3d3d3d] leading-relaxed mb-6">{wine.productionMethod}</p>
             </>
           )}
 

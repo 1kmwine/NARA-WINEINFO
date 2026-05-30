@@ -1,5 +1,5 @@
 import { formatVolume, formatServingTemp, parseJsonField } from '@/lib/utils'
-import type { Wine, Winery, WineGrape, Grape } from '@prisma/client'
+import type { Wine, Winery, Grape } from '@prisma/client'
 
 type WineSpecProps = {
   wine: Wine & { winery: Winery | null; grapes: Array<{ grape: Grape; percentage: number | null }> }
@@ -12,25 +12,32 @@ export function WineSpecTable({ wine }: WineSpecProps) {
     .join(', ')
 
   const rows = [
-    { label: '타입', value: wine.type === 'red' ? '레드' : wine.type === 'white' ? '화이트' : wine.type === 'rose' ? '로제' : wine.type === 'sparkling' ? '스파클링' : wine.type },
-    { label: '원산지', value: [wine.country, wine.regionL1, wine.regionL2].filter(Boolean).join(' > ') },
-    { label: '와이너리', value: wine.winery?.nameKo ?? '-' },
-    { label: '포도품종', value: grapeStr || '-' },
-    { label: '용량', value: formatVolume(wine.volume) },
-    { label: '음용온도', value: formatServingTemp(wine.servingTempMin, wine.servingTempMax) },
-    { label: '음식궁합', value: foodPairing.join(', ') || '-' },
+    { label: 'Type', value: wine.type === 'red' ? '레드' : wine.type === 'white' ? '화이트' : wine.type === 'rose' ? '로제' : wine.type === 'sparkling' ? '스파클링' : wine.type },
+    { label: 'Origin', value: [wine.country, wine.regionL1, wine.regionL2].filter(Boolean).join(' › ') },
+    { label: 'Winery', value: wine.winery?.nameKo ?? '-' },
+    { label: 'Grape', value: grapeStr || '-' },
+    { label: 'Volume', value: formatVolume(wine.volume) },
+    { label: 'Serving', value: formatServingTemp(wine.servingTempMin, wine.servingTempMax) },
+    { label: 'Pairing', value: foodPairing.join(', ') || '-' },
   ]
 
   return (
-    <table className="w-full text-sm">
-      <tbody>
-        {rows.map(row => (
-          <tr key={row.label} className="border-b border-gray-100 last:border-0">
-            <td className="spec-label py-2 pr-4 whitespace-nowrap w-24">{row.label}</td>
-            <td className="py-2 text-gray-700">{row.value}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div>
+      {rows.map((row, i) => (
+        <div
+          key={row.label}
+          className="flex"
+          style={{ borderBottom: i < rows.length - 1 ? '1px solid #e8e8e8' : 'none' }}
+        >
+          <div
+            className="shrink-0 px-4 py-3 spec-label"
+            style={{ width: 100, background: '#f9f9f9', borderRight: '1px solid #e8e8e8' }}
+          >
+            {row.label}
+          </div>
+          <div className="flex-1 px-4 py-3 text-sm text-[#3d3d3d]">{row.value}</div>
+        </div>
+      ))}
+    </div>
   )
 }
