@@ -15,14 +15,20 @@ class WineryOfficialScraper(BaseScraper):
             return []
         try:
             html = self.fetch(winery_url)
-        except RuntimeError:
+        except Exception:
             return []
         soup = self.parse(html)
 
         summary = ""
-        desc_el = soup.select_one("meta[name='description']")
-        if desc_el:
-            summary = desc_el.get("content", "")
+        for selector, attr in [
+            ("meta[property='og:description']", "content"),
+            ("meta[name='description']", "content"),
+        ]:
+            el = soup.select_one(selector)
+            if el:
+                summary = el.get(attr, "").strip()
+            if summary:
+                break
         if not summary:
             body_el = soup.select_one("main p, article p, .content p")
             if body_el:
