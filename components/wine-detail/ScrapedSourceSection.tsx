@@ -1,6 +1,3 @@
-'use client'
-
-import { useState } from 'react'
 import type { ScrapedData } from '@prisma/client'
 import { sourceTypeLabel, sourceTypeIcon, formatDate } from '@/lib/utils'
 import type { SourceType } from '@/lib/types'
@@ -10,56 +7,73 @@ const SOURCE_ORDER: SourceType[] = [
   'wine_searcher', 'winery_official', 'article_kr', 'article_global', 'other',
 ]
 
-function ScrapedCard({ item }: { item: ScrapedData }) {
-  const [expanded, setExpanded] = useState(false)
-
+function SectionDivider({ title }: { title: string }) {
   return (
-    <div className="border border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-colors">
+    <div className="section-divider">
+      <div className="w-5 h-px shrink-0" style={{ background: '#1B4332' }} />
+      <span className="section-divider-title">{title}</span>
+      <div className="flex-1 h-px" style={{ background: '#e8e8e8' }} />
+    </div>
+  )
+}
+
+function ScrapedCard({ item }: { item: ScrapedData }) {
+  return (
+    <div className="border border-[#e8e8e8] rounded-lg p-4 hover:border-[#1B4332]/30 transition-colors">
       {/* YouTube 썸네일 */}
       {item.thumbnailUrl && item.sourceType === 'youtube' && (
-        <a href={item.url ?? '#'} target="_blank" rel="noopener noreferrer" className="block mb-3">
+        <a
+          href={item.url ?? '#'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block mb-3 rounded-md overflow-hidden"
+        >
           <img
             src={item.thumbnailUrl}
             alt={item.title ?? ''}
-            className="w-full rounded-md object-cover max-h-36"
+            className="w-full object-cover max-h-40"
           />
         </a>
       )}
 
       {/* 제목 */}
       {item.title && (
-        <h4 className="text-sm font-semibold text-gray-900 mb-1 leading-snug">
+        <h4 className="text-[14px] font-semibold text-[#111111] tracking-[-0.01em] leading-snug mb-1.5">
           {item.url ? (
-            <a href={item.url} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#1B4332] transition-colors"
+            >
               {item.title}
             </a>
-          ) : item.title}
+          ) : (
+            item.title
+          )}
         </h4>
       )}
 
       {/* 메타 */}
-      <div className="flex flex-wrap gap-2 text-xs text-gray-400 mb-2">
-        {item.author && <span>{item.author}</span>}
-        {item.publishedAt && <span>{formatDate(item.publishedAt)}</span>}
-        {item.sourceName && <span className="badge-source">{item.sourceName}</span>}
+      <div className="flex flex-wrap items-center gap-2 mb-2.5">
+        {item.author && (
+          <span className="text-xs text-[#b3b3b3]">{item.author}</span>
+        )}
+        {item.publishedAt && (
+          <span className="text-xs text-[#b3b3b3]">{formatDate(item.publishedAt)}</span>
+        )}
+        {item.sourceName && (
+          <span className="text-[10px] font-medium tracking-[0.04em] uppercase bg-[#f9f9f9] border border-[#e8e8e8] rounded px-1.5 py-0.5 text-[#6b6b6b]">
+            {item.sourceName}
+          </span>
+        )}
       </div>
 
-      {/* 요약 / 본문 */}
+      {/* 요약 — 항상 전체 표시 */}
       {(item.summary || item.content) && (
-        <div className="text-sm text-gray-600 leading-relaxed">
-          <p className={expanded ? '' : 'line-clamp-3'}>
-            {item.summary ?? item.content}
-          </p>
-          {(item.summary ?? item.content ?? '').length > 150 && (
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className="text-xs mt-1 hover:text-primary"
-              style={{ color: '#7b2335' }}
-            >
-              {expanded ? '접기 ▲' : '더보기 ▼'}
-            </button>
-          )}
-        </div>
+        <p className="text-sm text-[#3d3d3d] leading-[1.7] tracking-[-0.01em]">
+          {item.summary ?? item.content}
+        </p>
       )}
 
       {/* 원문 링크 */}
@@ -68,8 +82,7 @@ function ScrapedCard({ item }: { item: ScrapedData }) {
           href={item.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block mt-2 text-xs underline"
-          style={{ color: '#7b2335' }}
+          className="inline-block mt-3 text-xs text-[#1B4332] hover:text-[#2D6A4F] transition-colors"
         >
           원문 보기 →
         </a>
@@ -78,11 +91,7 @@ function ScrapedCard({ item }: { item: ScrapedData }) {
   )
 }
 
-interface AllScrapedSectionsProps {
-  scrapedData: ScrapedData[]
-}
-
-export function AllScrapedSections({ scrapedData }: AllScrapedSectionsProps) {
+export function AllScrapedSections({ scrapedData }: { scrapedData: ScrapedData[] }) {
   if (!scrapedData.length) return null
 
   const grouped = SOURCE_ORDER.reduce<Record<string, ScrapedData[]>>((acc, type) => {
@@ -95,22 +104,19 @@ export function AllScrapedSections({ scrapedData }: AllScrapedSectionsProps) {
   if (otherItems.length > 0) grouped['other'] = [...(grouped['other'] ?? []), ...otherItems]
 
   return (
-    <div className="space-y-10 mt-10">
+    <>
       {Object.entries(grouped).map(([sourceType, items]) => (
         <section key={sourceType}>
-          <div className="section-divider">
-            <span className="section-divider-title">
-              {sourceTypeIcon(sourceType)} {sourceTypeLabel(sourceType)}
-              <span className="ml-1 text-gray-400 font-normal">({items.length})</span>
-            </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <SectionDivider
+            title={`${sourceTypeIcon(sourceType)} ${sourceTypeLabel(sourceType)} (${items.length})`}
+          />
+          <div className="space-y-4 mb-6">
             {items.map(item => (
               <ScrapedCard key={item.id} item={item} />
             ))}
           </div>
         </section>
       ))}
-    </div>
+    </>
   )
 }

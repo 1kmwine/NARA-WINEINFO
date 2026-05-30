@@ -19,7 +19,7 @@ export function wineTypeColor(type: string): string {
 export function sourceTypeLabel(type: SourceType | string): string {
   const labels: Record<string, string> = {
     naver_blog: '네이버 블로그',
-    naver_cafe: '와쌉 카페',
+    naver_cafe: '네이버 카페',
     youtube: 'YouTube',
     instagram: '인스타그램',
     wine_searcher: '와인서쳐',
