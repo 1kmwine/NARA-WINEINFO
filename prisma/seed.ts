@@ -86,22 +86,7 @@ async function main() {
     update: {},
   })
 
-  await prisma.scrapedData.upsert({
-    where: { url: 'https://blog.naver.com/sample/caymus-review-2024' },
-    create: {
-      wineId: caymus.id,
-      sourceType: 'naver_blog',
-      sourceName: '와인러버김씨',
-      title: '케이머스 나파 밸리 카베르네 소비뇽 시음 후기',
-      url: 'https://blog.naver.com/sample/caymus-review-2024',
-      summary: '케이머스 특유의 진한 블랙프루트와 부드러운 타닌이 인상적인 와인. 스테이크와 환상적인 페어링.',
-      author: '와인러버김씨',
-      publishedAt: new Date('2024-11-15'),
-    },
-    update: {},
-  })
-
-  console.log('✅ Seed complete — Caymus sample data inserted')
+  console.log('✅ Seed complete — run the Python scraper to populate real scraped data')
 }
 
 main()

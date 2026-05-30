@@ -1,52 +1,48 @@
 # scripts/scraper/sources/article_scraper.py
-from urllib.parse import quote, urljoin, urlparse, parse_qs, unquote
-from typing import List, Optional
+import re
+import requests
+from urllib.parse import quote, urlparse, parse_qs, unquote
+from typing import List, Optional, Set
 from base_scraper import BaseScraper
 from db_client import ScrapedItem
 import config
 
+NAVER_NEWS = "https://search.naver.com/search.naver"
 DDG_HTML = "https://html.duckduckgo.com/html/"
 
-# ---------------------------------------------------------------------------
-# Source definitions
-# Each source may include an optional "ddg_site" for bot-resilient fallback.
-# ---------------------------------------------------------------------------
+NAVER_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8",
+    "Referer": "https://www.naver.com",
+}
+
+# Korean sources — searched via Naver news (where=news)
 KR_SOURCES = [
-    {
-        "name": "wine21",
-        # wine21.com returns 403 to bots — use DDG site: search as primary
-        "search_url": "https://www.wine21.com/search/?keyword={query}",
-        "result_sel": ".search_list li",
-        "title_sel": "a",
-        "desc_sel": ".summary",
-        "ddg_site": "wine21.com",
-    },
-    {
-        "name": "sommelierTimes",
-        # Standard WordPress search; may also block — provide DDG fallback
-        "search_url": "https://www.sommelierkorea.co.kr/?s={query}",
-        "result_sel": "article.post",
-        "title_sel": "h2 a",
-        "desc_sel": ".entry-summary",
-        "ddg_site": "sommelierkorea.co.kr",
-    },
+    {"name": "wine21",        "domain": "wine21.com",          "naver_kw": "wine21"},
+    {"name": "sommelierTimes","domain": "sommelierkorea.co.kr", "naver_kw": "소믈리에타임즈"},
+    {"name": "metro",         "domain": "metro.co.kr",          "naver_kw": "메트로신문"},
+    {"name": "fnNews",        "domain": "fnnews.com",           "naver_kw": "파이낸셜뉴스"},
+    {"name": "hankyung",      "domain": "hankyung.com",         "naver_kw": "한국경제"},
 ]
 
+# Global sources — searched via DuckDuckGo site:
 GLOBAL_SOURCES = [
-    {
-        "name": "decanter",
-        # decanter.com returns 403 to bots — use DDG site: search as primary
-        "search_url": "https://www.decanter.com/search/?q={query}",
-        "result_sel": "article",
-        "title_sel": "h3 a, h2 a",
-        "desc_sel": "p",
-        "ddg_site": "decanter.com",
-    },
+    {"name": "robertParker",   "domain": "robertparker.com"},
+    {"name": "wineSpectator",  "domain": "winespectator.com"},
+    {"name": "wineEnthusiast", "domain": "winemag.com"},
+    {"name": "jamesSuckling",  "domain": "jamessuckling.com"},
+    {"name": "decanter",       "domain": "decanter.com"},
 ]
+
+JS_SIGNALS = ("javascript required", "enable javascript", "cf-browser-verification")
 
 
 def _unwrap_ddg_url(href: str) -> Optional[str]:
-    """Extract the real destination URL from a DuckDuckGo redirect href."""
     if not href:
         return None
     if "uddg=" in href:
@@ -62,9 +58,6 @@ def _unwrap_ddg_url(href: str) -> Optional[str]:
     return None
 
 
-JS_SIGNALS = ("javascript required", "enable javascript", "cf-browser-verification")
-
-
 class ArticleScraper(BaseScraper):
     source_type = "article_kr"
 
@@ -75,90 +68,136 @@ class ArticleScraper(BaseScraper):
         self.sources = GLOBAL_SOURCES if is_global else KR_SOURCES
 
     def scrape_wine(self, wine_id: int, wine_slug: str, wine_name_ko: str) -> List[ScrapedItem]:
-        query = wine_slug if self.is_global else wine_name_ko
         items: List[ScrapedItem] = []
+        seen: Set[str] = set()
+
         for source in self.sources:
             try:
-                source_items = self._scrape_source(wine_id, query, source)
-                items.extend(source_items)
+                if self.is_global:
+                    new_items = self._scrape_global_source(wine_id, wine_slug, wine_name_ko, source)
+                else:
+                    new_items = self._scrape_kr_source(wine_id, wine_name_ko, source)
+                for item in new_items:
+                    if item.url not in seen:
+                        seen.add(item.url)
+                        items.append(item)
             except Exception:
                 continue
+
         return items[: config.MAX_RESULTS_PER_SOURCE]
 
     # ------------------------------------------------------------------
-    # Per-source scrape: try direct first, then DDG fallback
+    # Korean sources: Naver news search → DDG fallback
     # ------------------------------------------------------------------
-    def _scrape_source(self, wine_id: int, query: str, source: dict) -> List[ScrapedItem]:
-        direct = self._scrape_direct(wine_id, query, source)
-        if direct:
-            return direct
-        ddg_site = source.get("ddg_site", "")
-        if ddg_site:
-            return self._scrape_via_ddg(wine_id, query, source, ddg_site)
-        return []
+    def _scrape_kr_source(self, wine_id: int, wine_name_ko: str, source: dict) -> List[ScrapedItem]:
+        items = self._scrape_kr_via_naver(wine_id, wine_name_ko, source)
+        if items:
+            return items
+        return self._scrape_via_ddg(wine_id, wine_name_ko, source)
 
-    def _scrape_direct(self, wine_id: int, query: str, source: dict) -> List[ScrapedItem]:
-        url = source["search_url"].format(query=quote(query))
+    def _scrape_kr_via_naver(self, wine_id: int, wine_name_ko: str, source: dict) -> List[ScrapedItem]:
+        query = f"{wine_name_ko} {source['naver_kw']}"
         try:
-            html = self.fetch(url)
+            resp = requests.get(
+                NAVER_NEWS,
+                params={"where": "news", "query": query, "sort": "1"},
+                headers=NAVER_HEADERS,
+                timeout=config.REQUEST_TIMEOUT,
+            )
+            if not resp.ok:
+                return []
         except Exception:
             return []
 
-        # Skip JS-challenge / empty responses
-        if len(html) < 500 or any(sig in html.lower() for sig in JS_SIGNALS):
-            return []
-
-        soup = self.parse(html)
-        results = soup.select(source["result_sel"])
-        if not results:
-            return []
-
+        soup = self.parse(resp.text)
+        domain = source["domain"]
         items: List[ScrapedItem] = []
-        for article in results[:3]:
-            title_el = article.select_one(source["title_sel"])
-            desc_el = article.select_one(source["desc_sel"])
-            if not title_el:
+
+        for a in soup.find_all("a", href=re.compile(r'https?://')):
+            href = a.get("href", "")
+            if domain not in href:
                 continue
-            article_url = urljoin(url, title_el.get("href", "")) or url
+            title = a.get_text(strip=True)
+            if not title or len(title) < 5:
+                continue
+
+            # Find snippet in surrounding container
+            summary = ""
+            container = a
+            for _ in range(5):
+                if not container.parent:
+                    break
+                container = container.parent
+                if container.name in ("li", "div", "article"):
+                    break
+            for sel in (".news_dsc", ".dsc_txt", ".sub_txt", "p"):
+                el = container.select_one(sel)
+                if el:
+                    t = el.get_text(strip=True)
+                    if len(t) > 20 and t != title:
+                        summary = t
+                        break
+
             items.append(ScrapedItem(
                 wineId=wine_id,
                 sourceType=self.source_type,
-                url=article_url,
-                title=title_el.get_text(strip=True),
-                summary=self.truncate_summary(desc_el.get_text(strip=True) if desc_el else "") or None,
+                url=href,
+                title=title,
+                summary=self.truncate_summary(summary),
                 publishedAt=None,
                 thumbnailUrl=None,
-                extra={"source": source["name"]},
+                extra={"source": source["name"], "via": "naver_news"},
             ))
+            if len(items) >= 2:
+                break
+
         return items
 
-    def _scrape_via_ddg(self, wine_id: int, query: str, source: dict, site: str) -> List[ScrapedItem]:
-        q = f"site:{site} {query}"
-        url = f"{DDG_HTML}?q={quote(q)}&kl=kr-kr"
+    # ------------------------------------------------------------------
+    # Global sources: DuckDuckGo site: search
+    # ------------------------------------------------------------------
+    def _scrape_global_source(self, wine_id: int, wine_slug: str, wine_name_ko: str, source: dict) -> List[ScrapedItem]:
+        # Try English slug first, then Korean name
+        items = self._scrape_via_ddg(wine_id, wine_slug, source)
+        if not items:
+            items = self._scrape_via_ddg(wine_id, wine_name_ko, source)
+        return items
+
+    # ------------------------------------------------------------------
+    # DuckDuckGo site: fallback (used by both KR and global)
+    # ------------------------------------------------------------------
+    def _scrape_via_ddg(self, wine_id: int, query: str, source: dict) -> List[ScrapedItem]:
+        domain = source["domain"]
+        q = quote(f"site:{domain} {query}")
+        url = f"{DDG_HTML}?q={q}&kl=kr-kr"
         try:
             html = self.fetch(url)
-            soup = self.parse(html)
-            items: List[ScrapedItem] = []
-            for result in soup.select(".result")[:3]:
-                title_el = result.select_one(".result__title a.result__a, a.result__a")
-                if not title_el:
-                    continue
-                title = title_el.get_text(strip=True)
-                href = _unwrap_ddg_url(title_el.get("href", ""))
-                if not title or not href:
-                    continue
-                snippet_el = result.select_one(".result__snippet")
-                summary = snippet_el.get_text(strip=True) if snippet_el else ""
-                items.append(ScrapedItem(
-                    wineId=wine_id,
-                    sourceType=self.source_type,
-                    url=href,
-                    title=title,
-                    summary=self.truncate_summary(summary) or None,
-                    publishedAt=None,
-                    thumbnailUrl=None,
-                    extra={"source": source["name"], "via": "ddg"},
-                ))
-            return items
         except Exception:
             return []
+
+        if len(html) < 200 or any(sig in html.lower() for sig in JS_SIGNALS):
+            return []
+
+        soup = self.parse(html)
+        items: List[ScrapedItem] = []
+        for result in soup.select(".result")[:2]:
+            title_el = result.select_one(".result__title a.result__a, a.result__a")
+            if not title_el:
+                continue
+            title = title_el.get_text(strip=True)
+            href = _unwrap_ddg_url(title_el.get("href", ""))
+            if not title or not href:
+                continue
+            snippet_el = result.select_one(".result__snippet")
+            summary = snippet_el.get_text(strip=True) if snippet_el else ""
+            items.append(ScrapedItem(
+                wineId=wine_id,
+                sourceType=self.source_type,
+                url=href,
+                title=title,
+                summary=self.truncate_summary(summary) or None,
+                publishedAt=None,
+                thumbnailUrl=None,
+                extra={"source": source["name"], "via": "ddg"},
+            ))
+        return items
