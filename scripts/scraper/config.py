@@ -5,6 +5,7 @@ load_dotenv()
 
 API_BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:3000")
 INTERNAL_API_KEY = os.environ.get("INTERNAL_API_KEY", "")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 RATE_LIMITS = {
     "naver_blog": 1.0,

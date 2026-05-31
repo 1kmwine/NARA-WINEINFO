@@ -13564,40 +13564,7 @@ async function main() {
   }
   console.log(`Wineries done: ${WINERIES.length}`);
 
-  // 2. Grapes
-  for (const g of GRAPES) {
-    await prisma.grape.upsert({
-      where: { nameKo: g.nameKo },
-      update: {},
-      create: g,
-    });
-  }
-  console.log(`Grapes done: ${GRAPES.length}`);
-
-  // 3. Wines
-  for (const wine of WINES) {
-    const { wineryNameKo, grapeNames, ...wineData } = wine;
-    const winery = wineryNameKo
-      ? await prisma.winery.findUnique({ where: { nameKo: wineryNameKo } })
-      : null;
-    const created = await prisma.wine.upsert({
-      where: { slug: wineData.slug },
-      update: {},
-      create: { ...wineData, wineryId: winery?.id ?? null },
-    });
-    // 4. WineGrapes
-    for (const gname of grapeNames) {
-      const grape = await prisma.grape.findUnique({ where: { nameKo: gname } });
-      if (grape) {
-        await prisma.wineGrape.upsert({
-          where: { wineId_grapeId: { wineId: created.id, grapeId: grape.id } },
-          update: {},
-          create: { wineId: created.id, grapeId: grape.id },
-        });
-      }
-    }
-  }
-  console.log(`Wines done: ${WINES.length}`);
+  console.log('✅ Seed complete — run the Python scraper to populate real scraped data')
 }
 
 main().catch(console.error).finally(() => prisma.$disconnect());

@@ -4,6 +4,7 @@ lxml==5.2.2
 youtube-transcript-api==0.6.2
 scrapetube==2.6.0
 python-dotenv==1.0.1
+anthropic>=0.40.0
 pytest==8.2.0
 pytest-mock==3.14.0
 responses==0.25.3
