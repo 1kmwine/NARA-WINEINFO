@@ -10,7 +10,7 @@ type WineCardData = Wine & {
 
 function TypeTag({ type }: { type: string }) {
   return (
-    <span className="inline-block text-[10px] font-medium tracking-[0.06em] uppercase text-[#6b6b6b] bg-[#f9f9f9] border border-[#e8e8e8] rounded px-1.5 py-0.5">
+    <span className="inline-block text-[11px] font-medium tracking-[0.04em] uppercase text-[#6b6b6b] bg-[#f9f9f9] border border-[#e8e8e8] rounded px-1.5 py-0.5">
       {wineTypeLabel(type)}
     </span>
   )
@@ -49,12 +49,12 @@ export default function WineCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5">
             <TypeTag type={wine.type} />
-            <span className="text-xs text-[#b3b3b3]">{location}</span>
+            <span className="text-[13px] text-[#6b6b6b]">{location}</span>
           </div>
           <p className="text-[15px] font-semibold text-[#111111] tracking-[-0.01em] mb-1 break-keep line-clamp-2">
             {wine.nameKo}
           </p>
-          <p className="text-xs text-[#b3b3b3] mb-2">{wine.nameEn}</p>
+          <p className="text-xs text-[#6b6b6b] mb-2">{wine.nameEn}</p>
           {(wine.winery || grape) && (
             <p className="text-[13px] text-[#6b6b6b]">
               {[wine.winery?.nameKo, grape?.nameKo].filter(Boolean).join(' · ')}
@@ -99,7 +99,7 @@ export default function WineCard({
           {wine.nameKo}
         </p>
         {wine.winery && (
-          <p className="text-xs text-[#b3b3b3] mb-1.5">{wine.winery.nameKo}</p>
+          <p className="text-[12px] text-[#6b6b6b] mb-1.5">{wine.winery.nameKo}</p>
         )}
         <p className="text-[13px] text-[#6b6b6b]">{location}</p>
         {grape && <p className="text-[13px] text-[#6b6b6b] mt-0.5">{grape.nameKo}</p>}

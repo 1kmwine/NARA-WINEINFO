@@ -38,7 +38,7 @@ export function WineDetailSidebar({ wine }: SidebarProps) {
 
         {/* 맛 프로필 */}
         <div className="border border-[#e8e8e8] rounded-lg p-4">
-          <p className="text-[10px] font-medium tracking-[0.06em] uppercase text-[#b3b3b3] mb-3.5">
+          <p className="text-[11px] font-medium tracking-[0.04em] uppercase text-[#b3b3b3] mb-3.5">
             Taste Profile
           </p>
           <ScaleGroup
@@ -53,7 +53,7 @@ export function WineDetailSidebar({ wine }: SidebarProps) {
         {/* 수상 내역 */}
         {wine.awards.length > 0 && (
           <div className="border border-[#e8e8e8] rounded-lg p-4">
-            <p className="text-[10px] font-medium tracking-[0.06em] uppercase text-[#b3b3b3] mb-3">
+            <p className="text-[11px] font-medium tracking-[0.04em] uppercase text-[#b3b3b3] mb-3">
               Awards
             </p>
             <AwardList awards={wine.awards} maxVisible={5} />

@@ -23,11 +23,10 @@ function FilterItem({
   return (
     <button
       onClick={onClick}
-      className="w-full text-left text-[13px] px-2.5 py-1.5 rounded-r border-l-2 transition-all"
+      className="w-full text-left text-[13px] px-2.5 py-1.5 rounded transition-all"
       style={{
         color: active ? '#1B4332' : '#6b6b6b',
         fontWeight: active ? 600 : 400,
-        borderLeftColor: active ? '#1B4332' : 'transparent',
         background: active ? '#f9f9f9' : 'transparent',
       }}
     >
@@ -54,7 +53,7 @@ export function WineFilters({ countries }: { countries: string[] }) {
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-[10px] font-medium tracking-[0.06em] uppercase text-[#b3b3b3] mb-3">타입</p>
+        <p className="text-[11px] font-medium tracking-[0.04em] uppercase text-[#b3b3b3] mb-3">타입</p>
         <div className="space-y-0.5">
           {TYPES.map(t => (
             <FilterItem
@@ -68,7 +67,7 @@ export function WineFilters({ countries }: { countries: string[] }) {
       </div>
       {countries.length > 0 && (
         <div>
-          <p className="text-[10px] font-medium tracking-[0.06em] uppercase text-[#b3b3b3] mb-3">국가</p>
+          <p className="text-[11px] font-medium tracking-[0.04em] uppercase text-[#b3b3b3] mb-3">국가</p>
           <div className="space-y-0.5">
             <FilterItem
               label="전체"

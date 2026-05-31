@@ -30,7 +30,7 @@ function SectionDivider({ title }: { title: string }) {
 
 function TypeTag({ type }: { type: string }) {
   return (
-    <span className="inline-block text-[10px] font-medium tracking-[0.06em] uppercase text-[#6b6b6b] bg-[#f9f9f9] border border-[#e8e8e8] rounded px-1.5 py-0.5">
+    <span className="inline-block text-[11px] font-medium tracking-[0.04em] uppercase text-[#6b6b6b] bg-[#f9f9f9] border border-[#e8e8e8] rounded px-1.5 py-0.5">
       {wineTypeLabel(type)}
     </span>
   )
@@ -46,14 +46,14 @@ export default async function WineDetailPage({ params }: { params: Params }) {
     <div className="max-w-[940px] mx-auto px-8 py-8">
       {/* 와인명 헤더 */}
       <div className="mb-8 pb-8 border-b border-[#e8e8e8]">
-        <p className="text-[10px] font-medium tracking-[0.06em] uppercase text-[#b3b3b3] mb-2.5">
+        <p className="text-[11px] font-medium tracking-[0.04em] uppercase text-[#b3b3b3] mb-2.5">
           {wine.nameEn}
         </p>
         <h1 className="text-[28px] font-bold text-[#111111] tracking-[-0.025em] leading-[1.25] mb-3">
           {wine.nameKo}
         </h1>
         {wine.subtitle && (
-          <p className="text-sm font-semibold tracking-widest mb-3" style={{ color: '#1B4332' }}>
+          <p className="text-sm font-semibold tracking-[0.04em] mb-3" style={{ color: '#1B4332' }}>
             {wine.subtitle}
           </p>
         )}
