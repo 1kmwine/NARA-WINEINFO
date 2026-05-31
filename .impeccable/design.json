@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-31T00:00:00Z",
+  "title": "Design System: Nara Wineinfo",
+  "extensions": {
+    "colorMeta": {
+      "terroir-green": {
+        "role": "primary",
+        "displayName": "Terroir Green",
+        "canonical": "#1B4332",
+        "tonalRamp": ["#0a1a13", "#112b1e", "#1B4332", "#255c44", "#2D6A4F", "#3d7a5d", "#5a9975", "#8dbea4", "#d1e8dd"]
+      },
+      "terroir-green-lift": {
+        "role": "primary-hover",
+        "displayName": "Terroir Green Lift",
+        "canonical": "#2D6A4F",
+        "tonalRamp": ["#0f2219", "#1a3527", "#22473a", "#2D6A4F", "#3a8060", "#52a07b", "#7aba9a", "#aad4be", "#d8ede4"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#111111",
+        "tonalRamp": ["#080808", "#111111", "#222222", "#333333", "#444444", "#666666", "#888888", "#aaaaaa", "#cccccc"]
+      },
+      "body-text": {
+        "role": "neutral",
+        "displayName": "Body Text",
+        "canonical": "#3d3d3d",
+        "tonalRamp": ["#111111", "#222222", "#3d3d3d", "#555555", "#6b6b6b", "#888888", "#aaaaaa", "#cccccc", "#eeeeee"]
+      },
+      "secondary-text": {
+        "role": "neutral",
+        "displayName": "Secondary Text",
+        "canonical": "#6b6b6b",
+        "tonalRamp": ["#222222", "#3d3d3d", "#555555", "#6b6b6b", "#888888", "#aaaaaa", "#c0c0c0", "#d8d8d8", "#f0f0f0"]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "canonical": "#b3b3b3",
+        "tonalRamp": ["#444444", "#666666", "#888888", "#aaaaaa", "#b3b3b3", "#c8c8c8", "#d8d8d8", "#e8e8e8", "#f4f4f4"]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border",
+        "canonical": "#e8e8e8",
+        "tonalRamp": ["#888888", "#aaaaaa", "#c0c0c0", "#d0d0d0", "#e0e0e0", "#e8e8e8", "#efefef", "#f4f4f4", "#fafafa"]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Canvas",
+        "canonical": "#f9f9f9",
+        "tonalRamp": ["#cccccc", "#d8d8d8", "#e4e4e4", "#eeeeee", "#f4f4f4", "#f9f9f9", "#fafafa", "#fcfcfc", "#ffffff"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#e0e0e0", "#e8e8e8", "#f0f0f0", "#f4f4f4", "#f9f9f9", "#fafafa", "#fcfcfc", "#fefefe", "#ffffff"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "홈 히어로 헤드라인 단독 사용." },
+      "headline": { "displayName": "Headline", "purpose": "페이지 제목 (와인 컬렉션 등)." },
+      "title": { "displayName": "Title", "purpose": "카드 와인명, 헤더 브랜드명, 서브타이틀." },
+      "body": { "displayName": "Body", "purpose": "설명 문단, 본문. 최대 65–70ch." },
+      "label": { "displayName": "Label", "purpose": "네비게이션, 분류 태그, spec 레이블 전용 (uppercase, 4단어 이하)." }
+    },
+    "shadows": [
+      { "name": "card-hover", "value": "0 8px 24px rgba(0,0,0,0.10)", "purpose": "와인 카드 hover 시 부상 신호." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "기본 상태 전환 (200ms)." },
+      { "name": "ease-out-card", "value": "cubic-bezier(0, 0, 0.2, 1)", "purpose": "카드 hover shadow 등장 (200ms)." }
+    ],
+    "breakpoints": [
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1060px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "주 행동 버튼. 검색, 제출. 화면당 1개.",
+      "html": "<button class=\"ds-btn-primary\">검색</button>",
+      "css": ".ds-btn-primary { background: #1B4332; color: #ffffff; padding: 12px 24px; font-family: 'Pretendard Variable', Pretendard, sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s cubic-bezier(0.4,0,0.2,1); } .ds-btn-primary:hover { background: #2D6A4F; } .ds-btn-primary:focus-visible { outline: 2px solid #1B4332; outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "메인 검색 필드. 기본 상태는 border만, focus 시 border-color 변경.",
+      "html": "<input class=\"ds-input-search\" type=\"text\" placeholder=\"와인명, 와이너리, 품종…\" />",
+      "css": ".ds-input-search { background: #ffffff; color: #3d3d3d; border: 1.5px solid #e8e8e8; border-radius: 6px; padding: 12px 16px; font-family: 'Pretendard Variable', Pretendard, sans-serif; font-size: 14px; line-height: 1.75; width: 100%; transition: border-color 0.2s; outline: none; } .ds-input-search::placeholder { color: #b3b3b3; } .ds-input-search:focus { border-color: #111111; }"
+    },
+    {
+      "name": "Type Chip",
+      "kind": "chip",
+      "refersTo": "chip-type",
+      "description": "와인 타입 분류 태그 (레드/화이트 등). 읽기 전용.",
+      "html": "<span class=\"ds-chip-type\">레드</span>",
+      "css": ".ds-chip-type { display: inline-flex; align-items: center; background: #f9f9f9; color: #6b6b6b; border: 1px solid #e8e8e8; border-radius: 4px; padding: 2px 6px; font-family: 'Pretendard Variable', Pretendard, sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }"
+    },
+    {
+      "name": "Wine Card (Grid)",
+      "kind": "card",
+      "refersTo": "wine-card",
+      "description": "그리드 뷰 와인 카드. 이미지 영역과 콘텐츠 영역 분리.",
+      "html": "<a class=\"ds-wine-card\" href=\"#\"><div class=\"ds-wine-card-image\">🍾</div><div class=\"ds-wine-card-body\"><span class=\"ds-chip-type\">레드</span><p class=\"ds-wine-card-name\">샤토 마고 2019</p><p class=\"ds-wine-card-meta\">Château Margaux · 보르도 · 카베르네 소비뇽</p></div></a>",
+      "css": ".ds-wine-card { display: block; background: #ffffff; border: 1px solid #e8e8e8; border-radius: 8px; overflow: hidden; text-decoration: none; transition: box-shadow 0.2s cubic-bezier(0,0,0.2,1), border-color 0.2s; } .ds-wine-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.10); border-color: rgba(27,67,50,0.3); } .ds-wine-card-image { background: #f9f9f9; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid #e8e8e8; padding: 28px 0 20px; font-size: 2.5rem; min-height: 108px; } .ds-wine-card-body { padding: 16px; } .ds-wine-card-name { font-family: 'Pretendard Variable', Pretendard, sans-serif; font-size: 15px; font-weight: 600; color: #111111; letter-spacing: -0.01em; line-height: 1.45; margin: 6px 0 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } .ds-wine-card-meta { font-family: 'Pretendard Variable', Pretendard, sans-serif; font-size: 12px; color: #6b6b6b; } .ds-chip-type { display: inline-flex; align-items: center; background: #f9f9f9; color: #6b6b6b; border: 1px solid #e8e8e8; border-radius: 4px; padding: 2px 6px; font-size: 10px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }"
+    },
+    {
+      "name": "Nav Link",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "상단 네비게이션 링크. uppercase label 타이포그래피, 활성 시 underline.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-link\" href=\"#\">와인검색</a><a class=\"ds-nav-link ds-nav-link--active\" href=\"#\">브랜드</a><a class=\"ds-nav-link\" href=\"#\">지역</a></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 28px; } .ds-nav-link { font-family: 'Pretendard Variable', Pretendard, sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; text-decoration: none; color: #b3b3b3; border-bottom: 2px solid transparent; padding-bottom: 2px; transition: color 0.2s, border-color 0.2s; } .ds-nav-link:hover { color: #111111; } .ds-nav-link--active { color: #111111; border-bottom-color: #111111; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Cave Catalogue",
+    "overview": "Nara Wineinfo의 디자인 언어는 와인 하우스의 지하 카브(cave)에 정리된 분류 장부에서 출발한다. 소란스럽지 않고, 불필요한 장식도 없다. 각 와인은 정확한 레이블과 제자리를 가지며, 사용자는 조용히 탐색하고 정확히 찾는다. 디자인은 콘텐츠를 전달하는 그릇일 뿐, 스스로 주목받으려 하지 않는다.\n\n단일 서체(Pretendard Variable)가 한국어 환경에 최적화되어 위계를 형성하고, 딥 포레스트 그린 하나가 인터랙션의 주축을 담당한다.",
+    "keyCharacteristics": [
+      "단색 단계 계층 — 9단계 중립 + 1개 액션 컬러",
+      "타이트한 네거티브 트래킹(-0.01em~-0.025em)으로 한국어 가독성 향상",
+      "카드는 플랫 기본, 호버 시에만 부상",
+      "레이블은 항상 uppercase + 넓은 자간(0.04em) — 분류 태그로만 사용",
+      "10px 미만 텍스트 없음 (레이블 최소 11px)"
+    ],
+    "rules": [
+      { "name": "The One Voice Rule", "body": "Terroir Green은 한 화면에 하나의 인터랙션 주체에만 쓴다.", "section": "colors" },
+      { "name": "The Neutral Staircase Rule", "body": "텍스트 위계는 Ink → Body Text → Secondary Text → Muted 순서만 허용한다.", "section": "colors" },
+      { "name": "The Single Family Rule", "body": "서체는 Pretendard Variable 하나다. 두 번째 폰트를 추가하는 것은 이 시스템의 절제된 목소리를 희석시킨다.", "section": "typography" },
+      { "name": "The Label Floor Rule", "body": "uppercase 레이블은 최소 11px. 그 이하에서는 가독성이 무너진다.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "그림자는 상태 변화의 응답이지 장식이 아니다. hover/focus 외 그림자는 금지된다.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do 타이포그래피 위계만으로 섹션을 구분한다.",
+      "Do 카드 hover 시 border-color와 shadow를 동시에 바꿔 인터랙션 신호를 강화한다.",
+      "Do 모든 uppercase 레이블에 letter-spacing: 0.04em을 적용한다.",
+      "Do 이미지가 없는 와인 카드는 Canvas 배경 + 병 이모지 폴백을 유지한다.",
+      "Do 접근성 텍스트 대비를 확인한다."
+    ],
+    "donts": [
+      "Don't 화려한 SaaS 대시보드 패턴을 쓴다 — 그라데이션 숫자 트로피, hero-metric 템플릿.",
+      "Don't 소셜커머스형 장치를 사용한다 — 할인율 배지, 카운트다운 타이머.",
+      "Don't 위키피디아식 텍스트 덤프를 만든다.",
+      "Don't 카드에 border-radius: 16px 이상을 사용한다. 8px가 최대다.",
+      "Don't border-left: 3px+ solid [color]를 카드/리스트 아이템 액센트로 사용한다.",
+      "Don't background-clip: text 그라데이션 텍스트를 사용한다.",
+      "Don't Terroir Green을 텍스트 컬러로 사용한다.",
+      "Don't 새로운 서체를 추가한다."
+    ]
+  }
+}

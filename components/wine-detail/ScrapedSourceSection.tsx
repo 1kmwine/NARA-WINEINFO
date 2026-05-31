@@ -57,13 +57,13 @@ function ScrapedCard({ item }: { item: ScrapedData }) {
       {/* 메타 */}
       <div className="flex flex-wrap items-center gap-2 mb-2.5">
         {item.author && (
-          <span className="text-xs text-[#b3b3b3]">{item.author}</span>
+          <span className="text-xs text-[#6b6b6b]">{item.author}</span>
         )}
         {item.publishedAt && (
-          <span className="text-xs text-[#b3b3b3]">{formatDate(item.publishedAt)}</span>
+          <span className="text-xs text-[#6b6b6b]">{formatDate(item.publishedAt)}</span>
         )}
         {item.sourceName && (
-          <span className="text-[10px] font-medium tracking-[0.04em] uppercase bg-[#f9f9f9] border border-[#e8e8e8] rounded px-1.5 py-0.5 text-[#6b6b6b]">
+          <span className="text-[11px] font-medium tracking-[0.04em] uppercase bg-[#f9f9f9] border border-[#e8e8e8] rounded px-1.5 py-0.5 text-[#6b6b6b]">
             {item.sourceName}
           </span>
         )}

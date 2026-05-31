@@ -47,7 +47,7 @@ export default async function HomePage() {
     <div className="bg-white">
       {/* Hero */}
       <div className="max-w-[680px] mx-auto px-8 py-20 text-center">
-        <p className="text-[10px] font-medium tracking-[0.06em] uppercase text-[#b3b3b3] mb-5">
+        <p className="text-[11px] font-medium tracking-[0.04em] uppercase text-[#b3b3b3] mb-5">
           Korean Wine Intelligence
         </p>
         <h1 className="text-[28px] font-bold text-[#111111] tracking-[-0.025em] leading-[1.25] mb-4">
@@ -70,8 +70,7 @@ export default async function HomePage() {
           />
           <button
             type="submit"
-            className="text-[11px] font-medium tracking-[0.04em] uppercase text-white px-6 whitespace-nowrap transition-colors hover:opacity-90"
-            style={{ background: '#1B4332' }}
+            className="text-[11px] font-medium tracking-[0.04em] uppercase text-white px-6 whitespace-nowrap transition-colors bg-[#1B4332] hover:bg-[#2D6A4F]"
           >
             검색
           </button>
