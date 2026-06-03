@@ -22,6 +22,8 @@ export function sourceTypeLabel(type: SourceType | string): string {
     naver_cafe: '네이버 카페',
     youtube: 'YouTube',
     instagram: '인스타그램',
+    wine21: '와인21닷컴',
+    sommelier_times: '소믈리에타임즈',
     wine_searcher: '와인서쳐',
     winery_official: '와이너리 공식',
     article_kr: '국내 기사',
@@ -34,7 +36,8 @@ export function sourceTypeLabel(type: SourceType | string): string {
 export function sourceTypeIcon(type: SourceType | string): string {
   const icons: Record<string, string> = {
     naver_blog: '📝', naver_cafe: '☕', youtube: '📺',
-    instagram: '📸', wine_searcher: '🔍', winery_official: '🏰',
+    instagram: '📸', wine21: '🍷', sommelier_times: '🎓',
+    wine_searcher: '🔍', winery_official: '🏰',
     article_kr: '📰', article_global: '🌐', other: '📌',
   }
   return icons[type] ?? '📌'

@@ -94,12 +94,15 @@ export default function WineCard({
       <div className="p-4 pb-[18px]">
         <div className="flex items-center justify-between mb-2">
           <TypeTag type={wine.type} />
+          {'vintage' in wine && (wine as { vintage?: string | null }).vintage && (
+            <span className="text-[12px] text-[#b3b3b3]">{String((wine as { vintage?: string | null }).vintage)}</span>
+          )}
         </div>
         <p className="text-[15px] font-semibold text-[#111111] tracking-[-0.01em] leading-[1.45] mb-1 break-keep line-clamp-2">
           {wine.nameKo}
         </p>
         {wine.winery && (
-          <p className="text-[12px] text-[#6b6b6b] mb-1.5">{wine.winery.nameKo}</p>
+          <p className="text-[12px] text-[#b3b3b3] mb-1.5">{wine.winery.nameKo}</p>
         )}
         <p className="text-[13px] text-[#6b6b6b]">{location}</p>
         {grape && <p className="text-[13px] text-[#6b6b6b] mt-0.5">{grape.nameKo}</p>}

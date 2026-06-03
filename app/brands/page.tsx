@@ -21,7 +21,8 @@ async function getBrands() {
 function groupByLetter(brands: Awaited<ReturnType<typeof getBrands>>) {
   const groups: Record<string, typeof brands> = {}
   brands.forEach((brand) => {
-    const firstChar = brand.nameEn[0].toUpperCase()
+    const raw = (brand.nameEn || brand.nameKo || '')[0] ?? ''
+    const firstChar = raw.toUpperCase()
     const key = /^[A-Z]$/.test(firstChar) ? firstChar : '#'
     if (!groups[key]) groups[key] = []
     groups[key].push(brand)

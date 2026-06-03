@@ -9,6 +9,8 @@ export type SourceType =
   | 'naver_cafe'
   | 'youtube'
   | 'instagram'
+  | 'wine21'
+  | 'sommelier_times'
   | 'wine_searcher'
   | 'winery_official'
   | 'article_kr'
