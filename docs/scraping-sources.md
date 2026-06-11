@@ -1,6 +1,6 @@
 # 스크래핑 소스 목록
 
-> 마지막 업데이트: 2026-06-09  
+> 마지막 업데이트: 2026-06-11  
 > 용도별 구분: **[브리핑]** = 데일리 브리핑 수집, **[와인]** = 와인 상세 스크래퍼, **[공통]** = 둘 다
 
 ---
@@ -135,6 +135,7 @@
 2. 나라셀라 https://www.instagram.com/naracellar/ / https://www.instagram.com/winepicks_official/ **[브리핑]**
 3. 아영 https://www.instagram.com/ayoungfbc/ **[브리핑]**
 4. 비닛 https://www.instagram.com/iihida/ **[브리핑]**
+5. 와인행사모음 https://www.instagram.com/moment_event2025/  **[브리핑]**
 
 ---
 
@@ -144,8 +145,8 @@
 1. 와쌉 (네이버 카페, 17.5만 회원) https://cafe.naver.com/winerack24 **[브리핑]**
    - "★와쌉★ 와인 싸게 사는 사람들" — 한국 최대 와인 소비자 커뮤니티
    - 로컬 수집: `NaverSearch-search_cafearticle` query="와인 와쌉" sort=date ✅ (작동 확인 2026-06-10)
-   - CCR 수집: Python urllib → `search.naver.com` (브라우저 헤더) → DuckDuckGo fallback
-   - ⚠️ CCR 클라우드 환경에서 Naver 직접 접근 차단될 수 있음 → 수집 실패 시 "수집 불가" 표시 (지어내기 금지)
+   - CCR 수집: Python urllib → `search.naver.com?where=cafearticle&clubid=10050146` (NID_AUT+NID_SES 쿠키 인증) → DuckDuckGo fallback (업데이트: 2026-06-11)
+   - ⚠️ 쿠키 만료 시 접근 차단 가능 → 수집 실패 시 "수집 불가" 표시 (지어내기 금지)
 2. 네이버 블로그 (와인 시음/구매 후기) **[공통]**
    - 스크래퍼: `article_scraper.py` rate_limit `naver_blog: 1.0s`
    - 수집 방법: `NaverSearch-search_blog` query="와인 시음 추천" sort=date display=10
