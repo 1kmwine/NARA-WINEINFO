@@ -1,168 +1,212 @@
 # 스크래핑 소스 목록
 
-> 마지막 업데이트: 2026-06-11  
+> 마지막 업데이트: 2026-06-19
 > 용도별 구분: **[브리핑]** = 데일리 브리핑 수집, **[와인]** = 와인 상세 스크래퍼, **[공통]** = 둘 다
 
 ---
 
-## 국내 매거진
-1. 소믈리에 타임즈 https://www.sommeliertimes.com/ **[공통]**
-   - 스크래퍼: `article_scraper.py` KR_SOURCES (`domain: sommelierkorea.co.kr`, `naver_kw: 소믈리에타임즈`)
-2. 와인21 https://www.wine21.com/11_news/news_list.html **[공통]**
-   - 스크래퍼: `article_scraper.py` KR_SOURCES (`domain: wine21.com`, `naver_kw: wine21`)
-3. 와인인 https://winein.co.kr/ **[브리핑]**
-   - 수집 방법: `web_fetch` 직접 크롤링
+## 아키텍처 — 수집은 전부 로컬, 발송만 CCR
+
+2026-06-17 구조 변경. **Anthropic API를 로컬에서 쓰지 않는다.** 수집·HTML 생성은 로컬 PC에서 순수 Python(urllib)으로 처리하고, 클라우드(CCR)는 완성된 HTML을 받아 이메일만 발송한다.
+
+| 단계 | 실행 위치 | 방식 | 비고 |
+|------|----------|------|------|
+| ① 소스 수집 | **로컬 PC** `~/WINE-BRIEFING/scrape.py` | Python urllib + 세션 쿠키 | 네이버/IG 쿠키·로컬 IP 필수 |
+| ② 브리핑 HTML 생성 | **로컬 PC** `scrape.py` | 어제 JSON과 비교해 중복 제거 후 HTML 생성 | 수집 직후 같은 스크립트에서 처리 |
+| ③ GitHub 업로드 | **로컬 PC** `scrape.py` | GitHub Contents API | `docs/data/{날짜}/*.json` + `docs/briefings/{날짜}.html` |
+| ④ 이메일 발송 | **CCR(클라우드)** 트리거 | GitHub에서 HTML 다운로드 → Gmail API | 수집 일절 안 함 |
+
+> [!danger] CCR에서 수집 금지
+> 와쌉·블로그·유튜브·인스타·네이버 뉴스검색은 **네이버/유튜브/인스타그램 세션 쿠키와 로컬 PC IP**에 의존한다. CCR(클라우드 IP)에서 이들을 호출하면 **즉시 IP 차단**된다. 따라서 ①~③은 반드시 로컬, ④만 CCR.
+
+> **실행 위치**: `~/WINE-BRIEFING/`
+> **수집·생성 스크립트**: `~/WINE-BRIEFING/scrape.py` (이 문서를 읽고 시작 — 아래 "스크립트 동작" 참고)
+> **실행 스크립트**: `~/WINE-BRIEFING/run.sh` (crontab: `0 9 * * 1-5`)
+> **로그**: `~/WINE-BRIEFING/briefing.log`
+> **쿠키·토큰**: `scrape.py` 상단 상수 (`NAVER_COOKIE`, `IG_COOKIE`, `GH_TOKEN`)
+> **GitHub 업로드 경로**: `1kmwine/NARA-WINEINFO/docs/data/{날짜}/*.json`, `docs/briefings/{날짜}.html`
+> **CCR 발송 트리거**: `나라셀라-브리핑-실제메일-0600` (평일 06:00 KST)
 
 ---
 
-## 국내 뉴스
-> 일반 경제지는 와인 관련 키워드로 검색 필요
+## 스크립트 동작 (scrape.py)
 
-1. 한국경제 https://www.hankyung.com/ **[공통]**
-   - 스크래퍼: `article_scraper.py` KR_SOURCES (`domain: hankyung.com`, `naver_kw: 한국경제`)
-2. 매일경제 https://www.mk.co.kr/ **[브리핑]**
-   - 수집 방법: NaverSearch `search_news` query="와인 매일경제"
-3. 조선비즈 https://biz.chosun.com/ **[브리핑]**
-   - 수집 방법: NaverSearch `search_news` query="와인 조선비즈"
-4. 세계일보 https://www.segye.com/ **[브리핑]**
-   - 수집 방법: NaverSearch `search_news` query="와인 세계일보"
-5. 메트로 신문 https://www.metroseoul.co.kr/ **[공통]**
-   - 스크래퍼: `article_scraper.py` KR_SOURCES (`domain: metro.co.kr`, `naver_kw: 메트로신문`)
-6. 파이낸셜 뉴스 https://www.fnnews.com/ **[공통]**
-   - 스크래퍼: `article_scraper.py` KR_SOURCES (`domain: fnnews.com`, `naver_kw: 파이낸셜뉴스`)
+`scrape.py`는 실행 시 **가장 먼저 이 문서(`~/NARA-WINEINFO/docs/scraping-sources.md`)를 읽어** 아래 항목을 파싱한 뒤 수집을 시작한다. 문서를 수정하면 스크립트 동작이 바뀐다.
 
----
+스크립트가 이 문서에서 읽어가는 설정 (파싱 대상):
+- **유튜브 채널** — `## 유튜브` 표의 `youtube.com/@핸들` 과 `Channel ID`
+- **인스타그램 계정** — `## 인스타그램` 표의 `instagram.com/계정`
+- **국내 뉴스·매거진** — `## 국내 뉴스·매거진` 표의 검색어
+- **뉴스룸 직접 수집** — `## 뉴스룸` 표의 URL·방식
+- **검색 쿼리** — 아래 `수집 쿼리` 블록
 
-## 해외 매거진
-> ⚠️ 403 차단 사이트는 WebSearch로 대체 수집 (직접 fetch 불가)
-
-1. Decanter https://www.decanter.com/wine-news/ **[공통]**
-   - 스크래퍼: `article_scraper.py` GLOBAL_SOURCES (`domain: decanter.com`)
-   - 수집 방법: DuckDuckGo `site:decanter.com` 검색
-2. Wine-Searcher https://www.wine-searcher.com/dept/wine+news **[와인]**
-   - 스크래퍼: `article_scraper.py` GLOBAL_SOURCES (rate_limit: 0.5s)
-3. James Suckling https://www.jamessuckling.com/wine-news/ **[공통]**
-   - 스크래퍼: `article_scraper.py` GLOBAL_SOURCES (`domain: jamessuckling.com`)
-4. Wine Advocate (Robert Parker) https://winejournal.robertparker.com/ **[공통]**
-   - 스크래퍼: `article_scraper.py` GLOBAL_SOURCES (`domain: robertparker.com`)
-5. Wine Spectator https://www.winespectator.com/ **[공통]**
-   - 스크래퍼: `article_scraper.py` GLOBAL_SOURCES (`domain: winespectator.com`)
-6. Wine Enthusiast https://www.winemag.com/ **[공통]**
-   - 스크래퍼: `article_scraper.py` GLOBAL_SOURCES (`domain: winemag.com`)
+```수집쿼리
+와쌉_clubid: 10050146
+블로그_검색어: 와인 시음 후기, 와인 추천, 와인 페어링, 와인 구매 추천
+뉴스_토픽검색어: 와인 수입, 내추럴와인, 샴페인, 와인 트렌드, 와인 행사, 주류 수입동향, 관세청 주류
+최근_뉴스_일수: 3
+최근_블로그_일수: 14
+최근_유튜브_일수: 7
+최근_인스타_일수: 7
+```
 
 ---
 
-## 해외 뉴스
-1. OIV https://www.oiv.int/news/agenda, https://www.oiv.int/news/press **[브리핑]**
-   - 수집 방법: `web_fetch` 직접 크롤링
+## 국내 뉴스·매거진 **[브리핑]**
+
+> **실행 위치: 로컬 PC** · **수집 방식: 네이버 뉴스검색 (urllib + NID 쿠키)**
+> `search.naver.com?where=news&query=와인 {검색어}&sort=1` → 제목·언론사·요약(snippet)·날짜 파싱.
+> 언론사명이 대상 매체와 일치하거나, 제목에 와인 키워드가 있으면 채택. 최근 N일 이내만.
+> ⚠️ 네이버 쿠키·로컬 IP 의존 → CCR 수집 불가.
+
+| 매체 | 분류 | 검색어 | URL |
+|------|------|--------|-----|
+| 소믈리에타임즈 | 매거진 | 소믈리에타임즈 | https://www.sommeliertimes.com/ |
+| 와인21 | 매거진 | 와인21 | https://www.wine21.com/11_news/news_list.html |
+| 한국경제 | 뉴스 | 한국경제 와인 | https://www.hankyung.com/ |
+| 매일경제 | 뉴스 | 매일경제 와인 | https://www.mk.co.kr/ |
+| 조선비즈 | 뉴스 | 조선비즈 와인 | https://biz.chosun.com/ |
+| 세계일보 | 뉴스 | 세계일보 와인 | https://www.segye.com/ |
+| 메트로신문 | 뉴스 | 메트로 와인 | https://www.metroseoul.co.kr/ |
+| 파이낸셜뉴스 | 뉴스 | 파이낸셜뉴스 와인 | https://www.fnnews.com/ |
 
 ---
 
-## 국내 통계
-1. 수입 통계 https://tradedata.go.kr/ **[브리핑]**
-   - HS CODE 조회 대상:
-     - `220421` : 2리터 이하 용기에 넣은 것
-     - `220410` : 발포성 포도주
-2. 가처분소득 https://www.index.go.kr/unity/potal/indicator/IndexInfo.do?cdNo=2&clasCd=10&idxCd=F0134&upCd=6 **[브리핑]**
-3. 가구 월별 주류 소비 https://mods.go.kr/board.es?mid=a10301040400&bid=214 **[브리핑]**
-4. 소비 심리 지수 https://www.index.go.kr/unity/potal/main/EachDtlPageDetail.do?idx_cd=1058 **[브리핑]**
-5. 비닛 https://vinit.io/#yangchart **[브리핑]**
+## 뉴스룸 **[브리핑]**
+
+> **실행 위치: 로컬 PC** · **수집 방식: 직접 fetch (urllib)**
+> board = 그누보드 게시판 HTML 파싱 / wp = WordPress REST API(`/wp-json/wp/v2/posts`).
+
+| 매체 | URL | 방식 |
+|------|-----|------|
+| 나라셀라 칼럼 | https://www.naracellar.com/bbs/board.php?bo_table=column | board |
+| 나라셀라 보도자료 | https://www.naracellar.com/bbs/board.php?bo_table=press | board |
+| 와인인 | https://winein.co.kr/wp-json/wp/v2/posts?per_page=8&_fields=title,link,date,excerpt | wp |
+
+> [!note] 에노테카·신세계엘앤비 뉴스룸
+> 에노테카(`enoteca.co.kr/News`)는 imweb 기반으로 게시판이 상품·브랜드 페이지 위주라 일간 뉴스 추출이 불안정 → **현재 미수집**. 신세계 엘앤비 뉴스룸도 동일 사유 미수집. 추후 RSS/API 확인 시 추가.
 
 ---
 
-## 해외 통계
-1. OIV https://www.oiv.int/what-we-do/statistics **[브리핑]**
+## 유튜브 **[브리핑]**
+
+> **실행 위치: 로컬 PC** · **수집 방식: YouTube InnerTube `ytInitialData` 파싱 (urllib)**
+> `youtube.com/channel/{ID}/videos` 페이지의 `ytInitialData` JSON에서 최신 영상 최대 3개/채널.
+> Channel ID 미상이면 `youtube.com/@핸들` 페이지에서 `"channelId"` 자동 추출. 최근 N일 이내만.
+> 채널 외 영상 포함 금지.
+
+| 채널명 | URL | Channel ID |
+|--------|-----|-----------|
+| 비밀이야 | https://www.youtube.com/@bimirya | UCaKQ7_GT0k8u_sL0nE2tgkA |
+| 양갱 | https://www.youtube.com/@yanggangtv | UCohsv4KNeRzmj7E6ipE8COA |
+| 와인킹 | https://www.youtube.com/@wineking | UCb7KNFvMuvQz9LPRK4xyzfA |
+| 와인 좀 한해 | https://www.youtube.com/@JUNGHANHAE | UCsTjitDbkUW20H3U20ITqaw |
+| 이민정 MJ | https://www.youtube.com/@Rheeminjung_MJ | UCFNUGAiaGRgzVCXrjVoe1Hw |
 
 ---
 
-## 트렌드
+## 인스타그램 **[브리핑]**
 
----
+> **실행 위치: 로컬 PC** · **수집 방식: Instagram Private API (urllib + sessionid 쿠키)**
+> `GET /api/v1/users/web_profile_info/?username={username}` → user ID → `GET /api/v1/feed/user/{uid}/?count=12`.
+> 최근 N일 이내 게시물만. 캡션·좋아요·경과일 수집.
+> ⚠️ sessionid 만료 시 전 계정 403. 쿠키: `scrape.py` `IG_COOKIE`.
+> 갱신: Chrome → instagram.com 로그인 → F12 → Application → Cookies → sessionid 복사.
 
-## 이벤트
-1. 와인21 https://www.wine21.com/12_event/index.html **[브리핑]**
-2. WSA https://www.wsaacademy.com/goods/catalog?page=1&searchMode=catalog&category=c0004&per=40&sorting=ranking&filter_display=lattice&code=0004 **[브리핑]**
-3. 도운 https://thedowoon.com/event2.php **[브리핑]**
-
----
-
-## 뉴스룸
-1. 나라셀라 **[브리핑]**
-   - https://www.naracellar.com/bbs/board.php?bo_table=column
-   - https://www.naracellar.com/bbs/board.php?bo_table=press
-   - https://www.naracellar.com/bbs/board.php?bo_table=event&wr_id=608
-2. 에노테카 https://www.enoteca.co.kr/News **[브리핑]**
-3. 신세계 엘앤비 https://www.shinsegaegroupnewsroom.com/family/ssglnb/ **[브리핑]**
-
----
-
-## 유튜브
-> 스크래퍼: `youtube_scraper.py` — `scrapetube.get_search(wine_name + " 와인", limit=10)` **[와인]**  
-> 브리핑용 CCR 수집: 아래 채널별 WebSearch `"채널명" site:youtube.com after:{ONE_WEEK_AGO}` — 채널 외 영상 대체 금지
-
-1. 와인 좀 한해 https://www.youtube.com/@JUNGHANHAE **[브리핑]**
-   - Channel ID: UCsTjitDbkUW20H3U20ITqaw (미확정)
-   - CCR 쿼리: `"와인 좀 한해" site:youtube.com after:{ONE_WEEK_AGO}`
-2. 이민정 MJ https://www.youtube.com/@Rheeminjung_MJ **[브리핑]**
-   - CCR 쿼리: `"Rheeminjung" OR "이민정 MJ" 와인 site:youtube.com after:{ONE_WEEK_AGO}`
-3. 비밀이야 https://www.youtube.com/@bimirya **[브리핑]**
-   - Channel ID: UCaKQ7_GT0k8u_sL0nE2tgkA ✅
-   - CCR 쿼리: `"비밀이야" 와인 site:youtube.com after:{ONE_WEEK_AGO}`
-4. 양갱 https://www.youtube.com/@yanggangtv **[브리핑]**
-   - Channel ID: UCohsv4KNeRzmj7E6ipE8COA ✅
-   - CCR 쿼리: `"양갱" 와인 site:youtube.com after:{ONE_WEEK_AGO}`
-5. 와인킹 https://www.youtube.com/@wineking **[브리핑]**
-   - Channel ID: UCb7KNFvMuvQz9LPRK4xyzfA ✅
-   - CCR 쿼리: `"와인킹" site:youtube.com after:{ONE_WEEK_AGO}`
-
----
-
-## 전방 시장
-1. 유통산업 통계 **[브리핑]**
-   - https://www.motir.go.kr/kor/article/ATCL3f49a5a8c/171537/view
-   - https://www.index.go.kr/unity/potal/main/EachDtlPageDetail.do?idx_cd=1142
-2. 외식 트렌드 https://diaryr.com/ **[브리핑]**
-3. 식품 - 서울대 https://calslab.snu.ac.kr/foodbiz/ **[브리핑]**
-   - https://www.youtube.com/@aTwebTV
-
----
-
-## 인스타그램
-> 스크래퍼: `instagram_scraper.py` — DuckDuckGo `site:instagram.com {wine_name} 와인` **[와인]**  
-> 브리핑용 계정 수집은 web_fetch 또는 WebSearch 활용
-
-1. 와인앤모어 https://www.instagram.com/wineandmoressg/ **[브리핑]**
-2. 나라셀라 https://www.instagram.com/naracellar/ / https://www.instagram.com/winepicks_official/ **[브리핑]**
-3. 아영 https://www.instagram.com/ayoungfbc/ **[브리핑]**
-4. 비닛 https://www.instagram.com/iihida/ **[브리핑]**
-5. 와인행사모음 https://www.instagram.com/moment_event2025/  **[브리핑]**
+| 계정 | URL | 표시명 |
+|------|-----|--------|
+| naracellar | https://www.instagram.com/naracellar/ | 나라셀라 |
+| wineandmoressg | https://www.instagram.com/wineandmoressg/ | 와인앤모어 |
+| ayoungfbc | https://www.instagram.com/ayoungfbc/ | 아영FBC |
+| iihida | https://www.instagram.com/iihida/ | 비닛 |
+| moment_event2025 | https://www.instagram.com/moment_event2025/ | 와인행사모음 |
 
 ---
 
 ## 커뮤니티
-> 소비자 실제 구매행동·여론 파악용
 
-1. 와쌉 (네이버 카페, 17.5만 회원) https://cafe.naver.com/winerack24 **[브리핑]**
-   - "★와쌉★ 와인 싸게 사는 사람들" — 한국 최대 와인 소비자 커뮤니티
-   - 로컬 수집: `NaverSearch-search_cafearticle` query="와인 와쌉" sort=date ✅ (작동 확인 2026-06-10)
-   - CCR 수집: Python urllib → `search.naver.com?where=cafearticle&clubid=10050146` (NID_AUT+NID_SES 쿠키 인증) → DuckDuckGo fallback (업데이트: 2026-06-11)
-   - ⚠️ 쿠키 만료 시 접근 차단 가능 → 수집 실패 시 "수집 불가" 표시 (지어내기 금지)
-2. 네이버 블로그 (와인 시음/구매 후기) **[공통]**
-   - 스크래퍼: `article_scraper.py` rate_limit `naver_blog: 1.0s`
-   - 수집 방법: `NaverSearch-search_blog` query="와인 시음 추천" sort=date display=10
-3. 티스토리 와인 블로그 **[브리핑]**
-   - 수집 방법: WebSearch "와인 추천 시음 site:tistory.com" 최신순
+### 와쌉 (네이버 카페) **[브리핑]**
+
+> **실행 위치: 로컬 PC** · **수집 방식: urllib + NID_AUT/NID_SES 쿠키**
+> "★와쌉★ 와인 싸게 사는 사람들" — 한국 최대 와인 소비자 커뮤니티 (17.5만 회원). clubid: 10050146.
+> ① 카페 메인 리스트(EUC-KR, `iframe_url`) → 실제 제목 + 반응수. ② `where=cafearticle` 검색 → snippet 보강.
+> 반응수 기준 상위 10건. ⚠️ 쿠키 만료 시 403. 쿠키: `scrape.py` `NAVER_COOKIE`.
+
+- https://cafe.naver.com/winerack24 (clubid: 10050146)
+
+### 네이버 블로그 (와인 시음/구매 후기) **[공통]**
+
+> **실행 위치: 로컬 PC** · **수집 방식: urllib + NID 쿠키 (와쌉과 동일 쿠키)**
+> `search.naver.com?where=blog&query={검색어}&sort=1` → 제목·요약·날짜 파싱.
+> **최근 N일 이내만 채택** (오래된 글 제외). 검색어는 위 `수집 쿼리` 블록 참조.
+
+### 티스토리 와인 블로그 **[브리핑]**
+
+> [!note] 현재 미수집
+> 기존엔 WebSearch로 수집했으나 로컬 전환 후 Anthropic API 미사용 → 미수집. 추후 티스토리 검색 API/직접 크롤링 확인 시 추가.
+
+---
+
+## 와인 수입 통계 **[브리핑]**
+
+> **실행 위치: 로컬 PC** · **수집 방식: 뉴스 키워드 검색 (일간) + 월간 수동 확인**
+
+### 일간 수집 — 뉴스 검색으로 커버
+
+`수집쿼리`의 `뉴스_토픽검색어`에 `주류 수입동향`, `관세청 주류`를 포함하여, 수입 관련 언론 기사를 매일 자동 수집한다.
+
+### 월간 원시 데이터 — 수동 확인
+
+관세청 수출입무역통계(tradedata.go.kr)는 WAF(웹방화벽)로 직접 API 호출 차단됨. 월 1회 수동으로 확인한다.
+
+| 항목 | 내용 |
+|------|------|
+| URL | https://tradedata.go.kr/ |
+| 메뉴 경로 | 수출입 통계 → 수출입 실적 → HS 코드 기준 조회 |
+| HS 코드 | **220421** (2L 이하 용기 포도주), **220410** (발포성 포도주) |
+| 수집 주기 | 월 1회 (매월 15일 이후 전월 확정치 발표) |
+| 확인 담당 | TODO: @담당자 지정 필요 |
+
+> [!note] 자동화 가능성
+> `data.go.kr` 공공데이터포털의 관세청 무역통계 API(`https://unipass.customs.go.kr:38010/ext/rest/`)는 인증키 발급 후 사용 가능. 향후 인증키 발급 시 `scrape.py`에 `scrape_trade_stats()` 함수로 추가 예정.
+
+---
+
+## 현재 미수집 (로컬 전환에 따른 보류)
+
+> 아래는 기존 `briefing-prompt.txt`(claude CLI + WebSearch/web_fetch) 방식에서 수집하던 소스. 로컬 순수 Python 전환으로 **현재 자동 수집 대상에서 제외**. 필요 시 별도 수집기 추가.
+
+| 소스군 | 항목 | 기존 방식 | 보류 사유 |
+|--------|------|----------|----------|
+| 해외 매거진 | Decanter, Wine Spectator, James Suckling, Wine Advocate, Wine Enthusiast, Wine-Searcher | WebSearch/DuckDuckGo `site:` | 403·JS 렌더 + WebSearch(API) 의존 |
+| 해외 뉴스/통계 | OIV (news/agenda, statistics) | web_fetch | 정적 페이지지만 일간 변화 적음 → 주기적 수동 |
+| 국내 통계 | 가처분소득, 가구 주류소비, 소비심리, 비닛 차트 | web_fetch | 월간 갱신 → 일간 부적합 |
+| 이벤트 | 와인21 이벤트, WSA, 도운 | web_fetch | 추후 직접 fetch 추가 검토 |
+| 전방 시장 | 유통산업 통계, 외식 트렌드(diaryr), 식품-서울대 | web_fetch | 월간/비정기 → 일간 부적합 |
+
+---
+
+## 쿠키 갱신 가이드
+
+네이버 쿠키(와쌉·블로그·뉴스검색)와 인스타그램 sessionid는 **주기적으로 만료**된다. 수집 실패(403) 시 갱신 후 `scrape.py` 상단 상수 업데이트.
+
+| 쿠키 | 사이트 | 갱신 절차 | scrape.py 상수 |
+|------|--------|----------|---------------|
+| NID_AUT, NID_SES | naver.com | Chrome → naver.com 로그인 → F12 → Application → Cookies → 값 복사 | `NAVER_COOKIE` |
+| sessionid | instagram.com | Chrome → instagram.com 로그인 → F12 → Application → Cookies → sessionid 복사 | `IG_COOKIE` |
 
 ---
 
 ## 스크래퍼 소스 코드 매핑
 
-| 소스 유형 | 파일 | 수집 방법 | Rate Limit |
-|-----------|------|-----------|-----------|
-| 국내 기사 | `scripts/scraper/sources/article_scraper.py` `KR_SOURCES` | Naver News 검색 → DDG fallback | 0.5s |
-| 해외 기사 | `scripts/scraper/sources/article_scraper.py` `GLOBAL_SOURCES` | DuckDuckGo `site:` 검색 | 0.5s |
-| 유튜브 | `scripts/scraper/sources/youtube_scraper.py` | `scrapetube` 키워드 검색 + 자막 요약 | 2.0s |
-| 인스타그램 | `scripts/scraper/sources/instagram_scraper.py` | DDG `site:instagram.com` 검색 | 1.5s |
-| 네이버 블로그 | `article_scraper.py` / MCP | NaverSearch API | 1.0s |
-| 네이버 카페 | MCP | `NaverSearch-search_cafearticle` | 1.0s |
-| Wine-Searcher | `article_scraper.py` GLOBAL_SOURCES | DDG `site:wine-searcher.com` | 0.5s |
+| 소스 유형 | 위치 | 실행 | 수집 방식 |
+|-----------|------|------|----------|
+| 전체 수집 + HTML 생성 | `~/WINE-BRIEFING/scrape.py` | 로컬, 평일 09:00 crontab | 순수 Python urllib (Anthropic API 미사용) |
+| 와쌉 카페 | scrape.py `scrape_wassap()` | 로컬 | urllib + 네이버 쿠키 (iframe_url EUC-KR + 검색) |
+| 네이버 블로그 | scrape.py `scrape_blog()` | 로컬 | urllib + 네이버 쿠키, 최근 N일 필터 |
+| 국내 뉴스·매거진 | scrape.py `scrape_news()` | 로컬 | 네이버 뉴스검색 + 쿠키, 언론사/제목 필터 |
+| 뉴스룸 | scrape.py `scrape_newsroom()` | 로컬 | board.php 파싱 / WP REST API |
+| 유튜브 | scrape.py `scrape_youtube()` | 로컬 | InnerTube ytInitialData (5채널) |
+| 인스타그램 | scrape.py `scrape_instagram()` | 로컬 | Instagram API + sessionid |
+| 와인 수입 통계 (뉴스) | scrape.py `scrape_news()` (토픽: 주류 수입동향, 관세청 주류) | 로컬 | 뉴스 키워드 검색 |
+| 이메일 발송 | CCR 트리거 `naracellar-wine-briefing-send` | 클라우드, 평일 06:00 (전날 데이터 발송) | GitHub 최신 HTML → Gmail API |
