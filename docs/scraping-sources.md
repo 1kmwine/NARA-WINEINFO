@@ -105,7 +105,8 @@
 
 ---
 
-## 인스타그램 **[브리핑]**
+<!--
+## 인스타그램 **[브리핑]** — 2026-06-23부터 비활성화 (사용자 요청)
 
 > **실행 위치: 로컬 PC** · **수집 방식: Instagram Private API (urllib + sessionid 쿠키)**
 > `GET /api/v1/users/web_profile_info/?username={username}` → user ID → `GET /api/v1/feed/user/{uid}/?count=12`.
@@ -113,13 +114,14 @@
 > ⚠️ sessionid 만료 시 전 계정 403. 쿠키: `scrape.py` `IG_COOKIE`.
 > 갱신: Chrome → instagram.com 로그인 → F12 → Application → Cookies → sessionid 복사.
 
-| 계정 | URL | 표시명 |
-|------|-----|--------|
-| naracellar | https://www.instagram.com/naracellar/ | 나라셀라 |
-| wineandmoressg | https://www.instagram.com/wineandmoressg/ | 와인앤모어 |
-| ayoungfbc | https://www.instagram.com/ayoungfbc/ | 아영FBC |
-| iihida | https://www.instagram.com/iihida/ | 비닛 |
-| moment_event2025 | https://www.instagram.com/moment_event2025/ | 와인행사모음 |
+재활성화 시 이 주석(`<!-- -->`) 을 해제하고 아래를 다시 파이프 테이블(`|...|...|`)로 되돌릴 것.
+계정 목록 (참고용):
+- naracellar https://www.instagram.com/naracellar/ 나라셀라
+- wineandmoressg https://www.instagram.com/wineandmoressg/ 와인앤모어
+- ayoungfbc https://www.instagram.com/ayoungfbc/ 아영FBC
+- iihida https://www.instagram.com/iihida/ 비닛
+- moment_event2025 https://www.instagram.com/moment_event2025/ 와인행사모음
+-->
 
 ---
 
