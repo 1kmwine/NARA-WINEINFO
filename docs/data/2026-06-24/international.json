@@ -1,0 +1,42 @@
+{
+  "date": "2026-06-24",
+  "foreign_magazines": [
+    {
+      "source": "Decanter",
+      "title": "New York's best wine lists named at Star Wine List of the Year 2026",
+      "url": "https://www.decanter.com/wine-news/new-yorks-best-wine-lists-named-at-star-wine-list-of-the-year-2026/",
+      "date": "2026-06"
+    },
+    {
+      "source": "Wine Spectator",
+      "title": "Auction Napa Valley 2026 raises $6 million over three-day charity event",
+      "url": "https://www.winespectator.com/articles/auction-napa-valley-pours-it-forward",
+      "date": "2026-06-06"
+    },
+    {
+      "source": "James Suckling",
+      "title": "Weekly Tasting Report: Rioja — 423 wines reviewed",
+      "url": "https://www.jamessuckling.com/weekly-tasting-report",
+      "date": "2026-06-18"
+    }
+  ],
+  "foreign_stats": [
+    {
+      "source": "OIV",
+      "title": "State of the World Wine Sector 2025: tariffs, climate and consumer trends drive sector adaptation",
+      "url": "https://www.oiv.int/press/state-world-wine-sector-2025-tariffs-climate-and-consumer-trends-drive-sector-adaptation",
+      "date": "2026-05-12"
+    }
+  ],
+  "domestic_stats": [],
+  "events": [
+    {
+      "name": "와인21 - 와인의 기원, 조지아를 만나다",
+      "date": "2026-06-29",
+      "url": "https://www.wine21.com/12_event/index.html",
+      "d_day": 5
+    }
+  ],
+  "downstream_market": [],
+  "note": "2026-06-24: CCR 클라우드 트리거(env_01GGDAVDMHMTWJ1BSeShe3dC) 실행 장애로 인해 이 회차는 Claude 세션에서 WebSearch로 수동 수집함. 자동화 복구 전까지 동일 방식 유지."
+}
