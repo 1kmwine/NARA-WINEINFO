@@ -107,7 +107,7 @@
 | 술술워커 | https://www.youtube.com/@술술워커soolsoolworker | UCoGMA51Q6Sb6_rc6gfm67fA |
 | 비노이스타 Vinoista | https://www.youtube.com/@vinoista2019 | UCho-kNWD5gnMRwh5hSWjofg |
 | 세상의 모든 와인 | https://www.youtube.com/@allthatwine | UCTFjxmJVbIr-bqjyFkmdMAw |
-| 김박사의 와인랩 | https://www.youtube.com/channel/UCoXVH3jniR0Jtt1K0Z6pZSg | UCoXVH3jniR0Jtt1K0Z6pZSg |
+| 김박사의 와인랩 | https://www.youtube.com/@DrKimsWineLab | UCoXVH3jniR0Jtt1K0Z6pZSg |
 
 > 2026-06-24 추가: 위 5개(와지트~세상의 모든 와인)는 사용자 제공 영상에서 채널 역추적. 김박사의 와인랩은 구독자 약 2.6만명 확인되어 추가(10,000명 이상 기준). 레코드와인·저스트드링크·와푸밸은 채널 핸들·구독자 수 검증 불가로 보류 — TODO: @담당자 확인 필요.
 
