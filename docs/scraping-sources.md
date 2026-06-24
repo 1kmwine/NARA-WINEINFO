@@ -102,6 +102,14 @@
 | 와인킹 | https://www.youtube.com/@wineking | UCb7KNFvMuvQz9LPRK4xyzfA |
 | 와인 좀 한해 | https://www.youtube.com/@JUNGHANHAE | UCsTjitDbkUW20H3U20ITqaw |
 | 이민정 MJ | https://www.youtube.com/@Rheeminjung_MJ | UCFNUGAiaGRgzVCXrjVoe1Hw |
+| 와지트 WAZIT | https://www.youtube.com/@wazitwine | UCfFi7-7_41KLVYHJtZ_wbrg |
+| 장르가 머니 | https://www.youtube.com/@genreismoney | UCn7WoT17_HlpfOPQHEqgUkw |
+| 술술워커 | https://www.youtube.com/@술술워커soolsoolworker | UCoGMA51Q6Sb6_rc6gfm67fA |
+| 비노이스타 Vinoista | https://www.youtube.com/@vinoista2019 | UCho-kNWD5gnMRwh5hSWjofg |
+| 세상의 모든 와인 | https://www.youtube.com/@allthatwine | UCTFjxmJVbIr-bqjyFkmdMAw |
+| 김박사의 와인랩 | https://www.youtube.com/channel/UCoXVH3jniR0Jtt1K0Z6pZSg | UCoXVH3jniR0Jtt1K0Z6pZSg |
+
+> 2026-06-24 추가: 위 5개(와지트~세상의 모든 와인)는 사용자 제공 영상에서 채널 역추적. 김박사의 와인랩은 구독자 약 2.6만명 확인되어 추가(10,000명 이상 기준). 레코드와인·저스트드링크·와푸밸은 채널 핸들·구독자 수 검증 불가로 보류 — TODO: @담당자 확인 필요.
 
 ---
 
@@ -174,17 +182,24 @@
 
 ---
 
-## 현재 미수집 (로컬 전환에 따른 보류)
+## 해외·통계·이벤트 소스 **[CCR 수집]** — 2026-06-24부터 클라우드로 이전
 
-> 아래는 기존 `briefing-prompt.txt`(claude CLI + WebSearch/web_fetch) 방식에서 수집하던 소스. 로컬 순수 Python 전환으로 **현재 자동 수집 대상에서 제외**. 필요 시 별도 수집기 추가.
+> **실행 위치: CCR(클라우드)** · **수집 방식: WebSearch / WebFetch**
+> 로컬 PC는 네이버/인스타 쿠키 의존 소스만 담당하고, 아래는 **CCR이 매일 별도 트리거에서 WebSearch·WebFetch로 수집**하여
+> `docs/data/{날짜}/international.json` 으로 GitHub에 업로드한다. 로컬 `generate_briefing()`이 이 파일을 읽어 브리핑에 합친다.
+> CCR은 로컬 쿠키·IP에 의존하지 않으므로 403 차단 사이트도 WebSearch로 우회 수집 가능.
 
-| 소스군 | 항목 | 기존 방식 | 보류 사유 |
-|--------|------|----------|----------|
-| 해외 매거진 | Decanter, Wine Spectator, James Suckling, Wine Advocate, Wine Enthusiast, Wine-Searcher | WebSearch/DuckDuckGo `site:` | 403·JS 렌더 + WebSearch(API) 의존 |
-| 해외 뉴스/통계 | OIV (news/agenda, statistics) | web_fetch | 정적 페이지지만 일간 변화 적음 → 주기적 수동 |
-| 국내 통계 | 가처분소득, 가구 주류소비, 소비심리, 비닛 차트 | web_fetch | 월간 갱신 → 일간 부적합 |
-| 이벤트 | 와인21 이벤트, WSA, 도운 | web_fetch | 추후 직접 fetch 추가 검토 |
-| 전방 시장 | 유통산업 통계, 외식 트렌드(diaryr), 식품-서울대 | web_fetch | 월간/비정기 → 일간 부적합 |
+| 소스군 | 항목 | 수집 방식 | 비고 |
+|--------|------|----------|------|
+| 해외 매거진 | Decanter, Wine Spectator, James Suckling, Wine Advocate, Wine Enthusiast, Wine-Searcher | WebSearch `site:` + WebFetch | 403 사이트는 WebSearch로 헤드라인만 |
+| 해외 뉴스/통계 | OIV (news/agenda, statistics) | WebFetch | 정적 페이지, 변경 적으면 스킵 가능 |
+| 국내 통계 | 가처분소득, 가구 주류소비, 소비심리, 비닛 차트 | WebFetch | 월간 갱신 — 변경 감지 시만 포함 |
+| 이벤트 | 와인21 이벤트, WSA, 도운 | WebFetch | 임박 일정(D-7 이내) 우선 |
+| 전방 시장 | 유통산업 통계, 외식 트렌드(diaryr), 식품-서울대 | WebFetch | 월간/비정기 |
+
+> [!note] CCR 트리거
+> 트리거명: `나라셀라-해외통계-수집` · 평일 05:30 KST (이메일 발송 트리거보다 먼저 실행) · `docs/scraping-sources.md`를 GitHub에서 직접 읽어 위 표 기준으로 수집.
+> 수집 실패/데이터 없음 시 **지어내지 않고 해당 항목 생략** — 추측 금지 원칙 적용.
 
 ---
 
