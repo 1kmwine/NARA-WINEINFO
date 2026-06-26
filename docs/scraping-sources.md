@@ -182,20 +182,30 @@
 
 ---
 
-## 해외·통계·이벤트 소스 **[CCR 수집]** — 2026-06-24부터 클라우드로 이전
+## 해외·통계·이벤트 소스 **[브리핑]** — 2026-06-26부터 로컬 직접 수집으로 전환
 
-> **실행 위치: CCR(클라우드)** · **수집 방식: WebSearch / WebFetch**
-> 로컬 PC는 네이버/인스타 쿠키 의존 소스만 담당하고, 아래는 **CCR이 매일 별도 트리거에서 WebSearch·WebFetch로 수집**하여
-> `docs/data/{날짜}/international.json` 으로 GitHub에 업로드한다. 로컬 `generate_briefing()`이 이 파일을 읽어 브리핑에 합친다.
-> CCR은 로컬 쿠키·IP에 의존하지 않으므로 403 차단 사이트도 WebSearch로 우회 수집 가능.
+> **실행 위치: 로컬 PC** · **수집 방식: urllib 직접 fetch + 무료 Google Translate 엔드포인트로 한국어 번역**
+> CCR(클라우드)은 usage credits 미설정으로 실행 자체가 막혀(2026-06-24~25 전부 실패) **사용 중단(홀드)**.
+> `scrape.py`의 `scrape_international()`이 `docs/data/{날짜}/international.json`을 직접 생성·업로드.
+> 제목·요약을 영문으로 수집한 뒤 `translate_to_ko()`로 한국어 번역 (`title_ko`, `summary_ko` 필드) — 브리핑 HTML엔 번역본만 표시.
+> ⛔ 수집 실패/항목 없음 = 그냥 생략. 지어내지 않는다.
 
-| 소스군 | 항목 | 수집 방식 | 비고 |
-|--------|------|----------|------|
-| 해외 매거진 | Decanter, Wine Spectator, James Suckling, Wine Advocate, Wine Enthusiast, Wine-Searcher | WebSearch `site:` + WebFetch | 403 사이트는 WebSearch로 헤드라인만 |
-| 해외 뉴스/통계 | OIV (news/agenda, statistics) | WebFetch | 정적 페이지, 변경 적으면 스킵 가능 |
-| 국내 통계 | 가처분소득, 가구 주류소비, 소비심리, 비닛 차트 | WebFetch | 월간 갱신 — 변경 감지 시만 포함 |
-| 이벤트 | 와인21 이벤트, WSA, 도운 | WebFetch | 임박 일정(D-7 이내) 우선 |
-| 전방 시장 | 유통산업 통계, 외식 트렌드(diaryr), 식품-서울대 | WebFetch | 월간/비정기 |
+| 소스 | 상태 | URL | 비고 |
+|------|------|-----|------|
+| Decanter | ✅ 수집 중 | https://www.decanter.com/wine-news/ | 제목+부제(synopsis) 페어링, 개별 기사 URL 매칭 불안정해 목록 페이지로 링크 |
+| Wine Spectator | ✅ 수집 중 | https://www.winespectator.com/ | 홈페이지에서 제목+부제(dek) 추출, 개별 기사 URL 정확히 매칭됨 |
+| OIV | ✅ 수집 중 | https://www.oiv.int/news/press | 제목+URL 안정적 매칭, 부제 없음 |
+| James Suckling | ❌ 수집 불가 | https://www.jamessuckling.com/ | Next.js 클라이언트 렌더링 — 정적 HTML에 콘텐츠 없음 |
+| VinePair | ❌ 수집 불가 | https://vinepair.com/ | 요청 시 404 (안정적 접근 불가) |
+| Wine Enthusiast | ❌ 수집 불가 | https://www.wineenthusiast.com/ | 403 차단 |
+| Wine-Searcher | ❌ 수집 불가 | https://www.wine-searcher.com/ | 403 차단 |
+| Wine Advocate | ❌ 미확인 | https://winejournal.robertparker.com/ | TODO: @담당자 접근 가능 여부 확인 필요 |
+
+| 소스군 | 항목 | 상태 |
+|--------|------|------|
+| 국내 통계 | 가처분소득, 가구 주류소비, 소비심리, 비닛 차트 | 미수집 (월간 갱신, 안정적 파싱 소스 미확보) — TODO |
+| 이벤트 | 와인21 이벤트, WSA, 도운 | 미수집 (페이지 구조상 정규식 매칭 불안정) — TODO |
+| 전방 시장 | 유통산업 통계, 외식 트렌드(diaryr), 식품-서울대 | 미수집 — TODO |
 
 > [!note] CCR 트리거
 > 트리거명: `나라셀라-해외통계-수집` · 평일 05:30 KST (이메일 발송 트리거보다 먼저 실행) · `docs/scraping-sources.md`를 GitHub에서 직접 읽어 위 표 기준으로 수집.
