@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+# start-local.sh — 로컬 개발 서버 시작
 
 BRANCH=$(git branch --show-current)
 echo "▶ Pulling origin/$BRANCH ..."

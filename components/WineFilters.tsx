@@ -23,11 +23,13 @@ function FilterItem({
   return (
     <button
       onClick={onClick}
-      className="w-full text-left text-[13px] px-2.5 py-1.5 rounded transition-all"
+      className="w-full text-left text-[13px] py-1.5 px-2.5 mb-0.5 transition-all"
       style={{
         color: active ? '#1B4332' : '#6b6b6b',
         fontWeight: active ? 600 : 400,
         background: active ? '#f9f9f9' : 'transparent',
+        borderLeft: `2px solid ${active ? '#1B4332' : 'transparent'}`,
+        borderRadius: '0 4px 4px 0',
       }}
     >
       {label}

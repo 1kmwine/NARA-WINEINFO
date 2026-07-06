@@ -5,6 +5,7 @@ import { parseJsonField, wineTypeLabel } from '@/lib/utils'
 import { WineDetailSidebar } from '@/components/wine-detail/WineDetailSidebar'
 import { WineSpecTable } from '@/components/wine-detail/WineSpecTable'
 import { AllScrapedSections } from '@/components/wine-detail/ScrapedSourceSection'
+import { PrintButton } from '@/components/wine-detail/PrintSheet'
 import type { CheckPoint } from '@/lib/types'
 
 type Params = { slug: string }
@@ -44,6 +45,11 @@ export default async function WineDetailPage({ params }: { params: Params }) {
 
   return (
     <div className="max-w-[940px] mx-auto px-8 py-8">
+      {/* 출력 버튼 */}
+      <div className="flex justify-end mb-4">
+        <PrintButton wine={wine} />
+      </div>
+
       {/* 와인명 헤더 */}
       <div className="mb-8 pb-8 border-b border-[#e8e8e8]">
         <p className="text-[11px] font-medium tracking-[0.04em] uppercase text-[#b3b3b3] mb-2.5">
@@ -77,17 +83,23 @@ export default async function WineDetailPage({ params }: { params: Params }) {
             <WineSpecTable wine={wine} />
           </div>
 
-          {/* Check Points */}
+          {/* Check Points — 한 줄 평 */}
           {checkpoints.length > 0 && (
             <>
               <SectionDivider title="Check Point" />
-              <div className="space-y-4 mb-6">
+              <div className="space-y-3 mb-6">
                 {checkpoints.map((cp, i) => (
-                  <div key={i} className="flex gap-3">
-                    <span className="text-sm font-bold shrink-0" style={{ color: '#1B4332' }}>
-                      {cp.label}
-                    </span>
-                    <p className="text-sm text-[#3d3d3d]">{cp.text}</p>
+                  <div key={i} className="flex gap-3 items-baseline">
+                    {cp.text ? (
+                      <>
+                        <span className="text-[11px] font-semibold tracking-[0.04em] uppercase shrink-0 pt-0.5" style={{ color: '#1B4332' }}>
+                          {cp.label}
+                        </span>
+                        <p className="text-sm text-[#3d3d3d] leading-relaxed">{cp.text}</p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-[#3d3d3d] leading-relaxed">{cp.label}</p>
+                    )}
                   </div>
                 ))}
               </div>

@@ -1,0 +1,81 @@
+{
+  "foreign_magazines": [
+    {
+      "source": "Decanter",
+      "title": "Meet Decanter's new North America Regional Editor",
+      "title_ko": "디캔터의 새로운 북미 지역 에디터를 만나보세요",
+      "summary_ko": "당첨자 발표...",
+      "url": "https://www.decanter.com/wine-news/",
+      "date": ""
+    },
+    {
+      "source": "Decanter",
+      "title": "Beyond Burgundy: How Languedoc-Roussillon became one of France's biggest stories at DWWA 2026",
+      "title_ko": "부르고뉴 너머: 랑그독-루시용이 DWWA 2026에서 프랑스의 가장 큰 이야기 중 하나가 된 방법",
+      "summary_ko": "최고의 클래식부터 숨겨진 보석까지...",
+      "url": "https://www.decanter.com/wine-news/",
+      "date": ""
+    },
+    {
+      "source": "Decanter",
+      "title": "A new dawn for UK wine at Decanter World Wine Awards 2026",
+      "title_ko": "2026년 Decanter World Wine Awards에서 영국 와인의 새로운 새벽을 열다",
+      "summary_ko": "와인 애호가들은 이토록 좋은 와인을 먹어본 적이 없습니다. 올해의 수상자를 찾아보세요...",
+      "url": "https://www.decanter.com/wine-news/",
+      "date": ""
+    },
+    {
+      "source": "Wine Spectator",
+      "title": "Rosé, Yes. But Which One?",
+      "title_ko": "로제, 응. 하지만 어느 것?",
+      "summary_ko": "2025 빈티지는 프랑스 남부의 다양한 스타일, 색상, 품질을 제공합니다.",
+      "url": "https://www.winespectator.com/articles/french-rose-wine-tasting-report-provence-bandol-tavel-2025",
+      "date": ""
+    },
+    {
+      "source": "Wine Spectator",
+      "title": "5 Foods That Beg for Rosé",
+      "title_ko": "로제에게 꼭 필요한 5가지 음식",
+      "summary_ko": "일부 좋아하는 음식은 일치시키기가 까다로울 수 있습니다. 정답은 로제다, 가장 다재다능한 동반자",
+      "url": "https://www.winespectator.com/articles/5-foods-that-beg-for-rose-053123",
+      "date": ""
+    },
+    {
+      "source": "Wine Spectator",
+      "title": "The Best Rosés Under $30, According to Sommeliers",
+      "title_ko": "소믈리에가 선정한 30달러 미만 최고의 로제",
+      "summary_ko": "최고의 와인 전문가들이 연중 내내 즐길 수 있는 가장 좋아하는 저가형 로제 13가지를 공유합니다.",
+      "url": "https://www.winespectator.com/articles/best-budget-value-rose-wine-under-30",
+      "date": ""
+    }
+  ],
+  "foreign_stats": [
+    {
+      "source": "OIV",
+      "title": "Viticulture Head of Unit job offer",
+      "title_ko": "포도재배 부서장 채용 제안",
+      "summary_ko": "",
+      "url": "https://www.oiv.int/press/viticulture-head-unit-job-offer",
+      "date": ""
+    },
+    {
+      "source": "OIV",
+      "title": "OIV hosts inaugural Ambassadors’ Day in Dijon",
+      "title_ko": "OIV, 디종에서 창립 대사의 날 개최",
+      "summary_ko": "",
+      "url": "https://www.oiv.int/press/oiv-hosts-inaugural-ambassadors-day-dijon",
+      "date": ""
+    },
+    {
+      "source": "OIV",
+      "title": "The OIV headquarters awarded the “Heritage of Diplomacy” label",
+      "title_ko": "OIV 본부는 \"외교 유산\" 라벨을 수상했습니다.",
+      "summary_ko": "",
+      "url": "https://www.oiv.int/press/oiv-headquarters-awarded-heritage-diplomacy-label",
+      "date": ""
+    }
+  ],
+  "domestic_stats": [],
+  "events": [],
+  "downstream_market": []
+}
