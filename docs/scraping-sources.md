@@ -3,6 +3,11 @@
 > 마지막 업데이트: 2026-06-09  
 > 용도별 구분: **[브리핑]** = 데일리 브리핑 수집, **[와인]** = 와인 상세 스크래퍼, **[공통]** = 둘 다
 
+> [!note] 향후 integrated_item_info 통합 대상
+> 여기 나열된 소스(유튜브·인스타그램·네이버 블로그·네이버 카페·해외 저널 등)는 향후
+> `wine_info.integrated_item_info` 테이블(ERP+1KM 조인 결과)에 흡수될 예정이다.
+> 통합 구조는 `NARA-Information-Digest` 리포의 `docs/SOURCE-DATA-ARCHITECTURE.md` 참고.
+
 ---
 
 ## 국내 매거진
