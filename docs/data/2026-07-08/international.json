@@ -1,0 +1,49 @@
+{
+  "foreign_magazines": [
+    {
+      "source": "Wine Spectator",
+      "title": "What kind of pruning goes on in a vineyard?",
+      "title_ko": "포도원에서는 어떤 종류의 가지치기 작업이 진행되나요?",
+      "summary_ko": "잘라낼 것과 유지할 것을 어떻게 선택합니까?",
+      "url": "https://www.winespectator.com/articles/what-kind-of-pruning-goes-on-in-a-vineyard",
+      "date": ""
+    },
+    {
+      "source": "Wine Spectator",
+      "title": "Harvest 101",
+      "title_ko": "수확 101",
+      "summary_ko": "크러쉬 시즌의 기본",
+      "url": "https://www.winespectator.com/articles/wine-harvest-101-basics-of-crush",
+      "date": ""
+    }
+  ],
+  "foreign_stats": [
+    {
+      "source": "OIV",
+      "title": "47th World Congress of Vine and Wine useful information",
+      "title_ko": "제47차 세계포도나무대회 유용한 정보",
+      "summary_ko": "",
+      "url": "https://www.oiv.int/press/47th-world-congress-vine-and-wine-useful-information",
+      "date": ""
+    },
+    {
+      "source": "OIV",
+      "title": "Viticulture Head of Unit job offer",
+      "title_ko": "포도재배 부서장 채용 제안",
+      "summary_ko": "",
+      "url": "https://www.oiv.int/press/viticulture-head-unit-job-offer",
+      "date": ""
+    },
+    {
+      "source": "OIV",
+      "title": "OIV hosts inaugural Ambassadors’ Day in Dijon",
+      "title_ko": "OIV, 디종에서 창립 대사의 날 개최",
+      "summary_ko": "",
+      "url": "https://www.oiv.int/press/oiv-hosts-inaugural-ambassadors-day-dijon",
+      "date": ""
+    }
+  ],
+  "domestic_stats": [],
+  "events": [],
+  "downstream_market": []
+}
